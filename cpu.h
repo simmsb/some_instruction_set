@@ -7,7 +7,7 @@ struct Cpu {
   struct Registers regs;
 };
 
-typedef void (*instruction)(struct Cpu *cpu, unsigned int args);
+typedef void (*instruction)(struct Cpu *, unsigned int);
 
 struct PackedInstr {
   instruction i;
