@@ -19,9 +19,8 @@ first two bits decide on length of instruction (00, 01, 10)
 #include <stdlib.h>
 #include <stdio.h>
 
-#define OPERATION struct Cpu *, unsigned int
-#define OPERATION_I struct Cpu *cpu, unsigned int args
-
+#define OPERATION struct Cpu *, uint16_t
+#define OPERATION_I struct Cpu *cpu, uint16_t args
 
 void nop(OPERATION);
 void ret(OPERATION);
@@ -35,21 +34,21 @@ instruction twoArgs(char);
 struct PackedInstr decode(char **stream) {
 
   char opcode = 0;
-  unsigned int operands = 0;
+  uint16_t operands = 0;
 
   opcode = **stream & 0x3F; // remove upper two bits
   int numargs = (**stream & 0xC0) >> 6;
   switch (numargs) { // extract top 2 bits then downshift
     case 2:
-      operands |= ((int) *++*stream) << 8; // get first arg, place at top
+      operands |= ((uint16_t) *++*stream) << 8; // get first arg, place at top
     case 1:
-      operands |= (int) *++*stream; // get (first or second arg), place at bottom (if this is a single arg instruction, arg is in the lower byte)
+      operands |= (uint16_t) *++*stream; // get (first or second arg), place at bottom (if this is a single arg instruction, arg is in the lower byte)
       break;
     default:
       goto ERROR;
   }
 
-  (*stream)++;
+  (*stream)++; // increment pointer (for next use)
 
   struct PackedInstr p;
   p.args = operands;
@@ -117,7 +116,6 @@ void nop(OPERATION_I) {
 }
 
 void ret(OPERATION_I) {
-
 }
 
 void call(OPERATION_I) {
