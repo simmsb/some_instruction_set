@@ -16,34 +16,109 @@ first two bits decide on length of instruction (00, 01, 10)
 */
 
 #include "cpu.h"
+#include <stdlib.h>
+#include <stdio.h>
+
+#define OPERATION struct Cpu *, unsigned int
+#define OPERATION_I struct Cpu *cpu, unsigned int args
 
 
+void nop(OPERATION);
+void ret(OPERATION);
+void call(OPERATION);
 
-void nop(struct Cpu*, unsigned int);
+instruction  noArgs(char);
+instruction  oneArg(char);
+instruction twoArgs(char);
 
 
-
-struct PackedInstr decode(char **stream){
+struct PackedInstr decode(char **stream) {
 
   char opcode = 0;
   unsigned int operands = 0;
 
   opcode = **stream & 0x3F; // remove upper two bits
-  switch ((**stream & 0xC0) >> 6) { // extract top 2 bits then downshift
+  int numargs = (**stream & 0xC0) >> 6;
+  switch (numargs) { // extract top 2 bits then downshift
     case 2:
-      operands |= ((int) *++*stream) << 16; // get first arg, place at top
+      operands |= ((int) *++*stream) << 8; // get first arg, place at top
     case 1:
       operands |= (int) *++*stream; // get (first or second arg), place at bottom (if this is a single arg instruction, arg is in the lower byte)
       break;
+    default:
+      goto ERROR;
   }
+
+  (*stream)++;
 
   struct PackedInstr p;
   p.args = operands;
 
-  switch (opcode) {
+  switch (numargs) {
     case 0:
-      p.i = nop;
+      p.i = noArgs(opcode);
+      break;
+    case 1:
+      p.i = oneArg(opcode);
+      break;
+    case 2:
+      p.i = twoArgs(opcode);
+      break;
+    default:
+      goto ERROR;
   }
 
   return p;
+
+  ERROR:
+    exit(1);
+}
+
+instruction noArgs(char opcode) {
+  switch (opcode) {
+    case 0:
+      return nop;
+    case 1:
+      return ret;
+    case 2:
+      return call;
+    default:
+      goto ERROR;
+  }
+
+  ERROR:
+    printf("[ERROR] Invalid 0 args instruction found, ID: %d\n", (int) opcode);
+    exit(1);
+}
+
+instruction oneArg(char opcode) {
+  switch (opcode) {
+    default:
+      goto ERROR;
+  }
+
+  ERROR:
+    printf("[ERROR] Invalid 1 arg instruction found, ID: %d\n", (int) opcode);
+    exit(1);
+}
+
+instruction twoArgs(char opcode) {
+  switch (opcode) {
+    default:
+      goto ERROR;
+  }
+
+  ERROR:
+    printf("[ERROR] Invalid 2 args instruction found, ID: %d\n", (int) opcode);
+    exit(1);
+}
+
+void nop(OPERATION_I) {
+}
+
+void ret(OPERATION_I) {
+
+}
+
+void call(OPERATION_I) {
 }
