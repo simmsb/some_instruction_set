@@ -19,17 +19,18 @@ first two bits decide on length of instruction (00, 01, 10)
 #include <stdlib.h>
 #include <stdio.h>
 
-#define OPERATION struct Cpu *, uint16_t
-#define OPERATION_I struct Cpu *cpu, uint16_t args
+char cpu_popstack(struct Cpu *cpu) {
+  return cpu->memory[++cpu->regs.esp]; // move up, get value
+}
 
-void nop(OPERATION);
-void ret(OPERATION);
-void call(OPERATION);
+void cpu_pushstack(struct Cpu *cpu, char val) {
+  cpu->memory[cpu->regs.esp--] = val; // set value, move down
+}
 
-instruction  noArgs(char);
-instruction  oneArg(char);
-instruction twoArgs(char);
-
+void cpu_splitargs(uint16_t args, char *arg1, char *arg2) {
+  *arg1 = (char) ((args >> 8) & 0xFF);
+  *arg2 = (char) (args & 0xFF);
+}
 
 struct PackedInstr decode(char **stream) {
 
@@ -92,6 +93,12 @@ instruction noArgs(char opcode) {
 
 instruction oneArg(char opcode) {
   switch (opcode) {
+    case 0:
+      return sjmp;
+    case 1:
+      return psh;
+    case 2:
+      return pop;
     default:
       goto ERROR;
   }
@@ -103,6 +110,10 @@ instruction oneArg(char opcode) {
 
 instruction twoArgs(char opcode) {
   switch (opcode) {
+    case 0:
+      return tst;
+    case 1:
+      return mov;
     default:
       goto ERROR;
   }
@@ -112,11 +123,34 @@ instruction twoArgs(char opcode) {
     exit(1);
 }
 
+void halt(OPERATION_I){
+  cpu->flags.halt = false;
+}
+
 void nop(OPERATION_I) {
+  // yo it's a no op
 }
 
 void ret(OPERATION_I) {
+  size_t upper = (size_t) cpu_popstack(cpu); // do this because memory is bytes and we need a 16 bit pointer
+  size_t lower = (size_t) cpu_popstack(cpu);
+  cpu->instructions = (char *) ((upper << 8) + lower);
 }
 
 void call(OPERATION_I) {
+  size_t address_upper = (size_t) cpu_popstack(cpu); // get location to jump to
+  size_t address_lower = (size_t) cpu_popstack(cpu);
+
+  size_t current_address = (size_t) cpu->instructions; // get return address
+  size_t return_lower = current_address & 0xff;
+  size_t return_upper = (current_address >> 8) & 0xff;
+
+  cpu_pushstack(cpu, (char) return_upper);
+  cpu_pushstack(cpu, (char) return_lower);
+
+  cpu->instructions = (char *) ((address_upper << 8) + address_lower); // set instruction pointer
+}
+
+void sjmp(OPERATION_I) {
+ // TODO: this
 }
