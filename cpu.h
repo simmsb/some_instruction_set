@@ -23,36 +23,34 @@ struct Flags {
 };
 
 struct Cpu {
-  char *memory;
-  char *instructions; // references to base of memory at start, but moves with instructions
+  uint16_t *memory;
+  uint16_t *instructions; // references to base of memory at start, but moves with instructions
   struct Registers regs;
   struct Flags flags;
 };
 
 typedef void (*instruction)(struct Cpu *, uint16_t);
 
-instruction  noArgs(char);
-instruction  oneArg(char);
-instruction twoArgs(char);
+instruction  noArgs(uint16_t);
+instruction  oneArg(uint16_t);
+instruction twoArgs(uint16_t);
 
 struct PackedInstr {
   instruction i;
-  uint16_t args;
+  int n;
+  uint16_t arg1;
+  uint16_t arg2;
 };
 
-struct PackedInstr decode(char **);
+struct PackedInstr decode(uint16_t **);
 
-#define OPERATION struct Cpu *, uint16_t
-#define OPERATION_I struct Cpu *cpu, uint16_t args
+void nop(struct Cpu *);
+void ret(struct Cpu *);
+void call(struct Cpu *);
 
-void nop(OPERATION);
-void ret(OPERATION);
-void call(OPERATION);
-void ljmp(OPERATION); // long jump (int)
+void jmp(struct Cpu *, uint16_t); // short jump (char)
+void psh(struct Cpu *, uint16_t);
+void pop(struct Cpu *, uint16_t);
 
-void sjmp(OPERATION); // short jump (char)
-void psh(OPERATION);
-void pop(OPERATION);
-
-void tst(OPERATION);
-void mov(OPERATION);
+void tst(struct Cpu *, uint16_t, uint16_t);
+void mov(struct Cpu *, uint16_t, uint16_t);

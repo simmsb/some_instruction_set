@@ -1,17 +1,17 @@
 /*
 
-each instruction is of 1 to 3 bytes long.
+each instruction is of 1 to 3 ints (uint16_t) long.
 
 first two bits decide on length of instruction (00, 01, 10)
 
-1 byte: [0 0] [0 0 0 0 0 0] (single opcodes only)
-                 opcode
+1 int: [0 0] [1 int - 2 bits] (single opcodes only)
+              opcode
 
-2 byte: [0 1] [0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
-                 opcode         operand 1
+2 int: [0 1] [1 int - 2 bits] [1 int]
+               opcode         operand 1
 
-3 byte: [1 0] [0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
-                 opcode         operand 1         operand 2
+3 int: [1 0] [1 int - 2 bits] [1 int] [1 int]
+               opcode      operand 1 operand 2
 
 */
 
@@ -19,62 +19,46 @@ first two bits decide on length of instruction (00, 01, 10)
 #include <stdlib.h>
 #include <stdio.h>
 
-char cpu_popstack(struct Cpu *cpu) {
+uint16_t cpu_popstack(struct Cpu *cpu) {
   return cpu->memory[++cpu->regs.esp]; // move up, get value
 }
 
-void cpu_pushstack(struct Cpu *cpu, char val) {
+void cpu_pushstack(struct Cpu *cpu, uint16_t val) {
   cpu->memory[cpu->regs.esp--] = val; // set value, move down
 }
 
-void cpu_splitargs(uint16_t args, char *arg1, char *arg2) {
-  *arg1 = (char) ((args >> 8) & 0xFF);
-  *arg2 = (char) (args & 0xFF);
+void cpu_splitargs(uint32_t args, uint16_t *arg1, uint16_t *arg2) {
+  *arg1 = (uint16_t) ((args >> 16) & 0xFFFF);
+  *arg2 = (uint16_t) (args & 0xFFFF);
 }
 
-struct PackedInstr decode(char **stream) {
+struct PackedInstr decode(uint16_t **stream) {
+  struct PackedInstr i;
 
-  char opcode = 0;
-  uint16_t operands = 0;
-
-  opcode = **stream & 0x3F; // remove upper two bits
-  int numargs = (**stream & 0xC0) >> 6;
-  switch (numargs) { // extract top 2 bits then downshift
-    case 2:
-      operands |= ((uint16_t) *++*stream) << 8; // get first arg, place at top
-    case 1:
-      operands |= (uint16_t) *++*stream; // get (first or second arg), place at bottom (if this is a single arg instruction, arg is in the lower byte)
-      break;
-    default:
-      goto ERROR;
-  }
-
-  (*stream)++; // increment pointer (for next use)
-
-  struct PackedInstr p;
-  p.args = operands;
-
-  switch (numargs) {
+  uint16_t opcode = **stream & 0x3FFF; // remove upper two bits
+  i.n = (**stream & 0xC000) >> 14;
+  switch (i.n) {
     case 0:
-      p.i = noArgs(opcode);
+      i.i = noArgs(opcode);
       break;
     case 1:
-      p.i = oneArg(opcode);
-      break;
+      i.i = oneArg(opcode);
+      i.arg1 = *++*stream;
     case 2:
-      p.i = twoArgs(opcode);
-      break;
+      i.i = twoArgs(opcode);
+      i.arg1 = *++*stream;
+      i.arg2 = *++*stream;
     default:
       goto ERROR;
   }
 
-  return p;
+  return i;
 
   ERROR:
     exit(1);
 }
 
-instruction noArgs(char opcode) {
+instruction noArgs(uint16_t opcode) {
   switch (opcode) {
     case 0:
       return nop;
