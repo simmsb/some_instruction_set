@@ -7,7 +7,6 @@
 struct Cpu *init_cpu(int mem_size) {
   struct Cpu *cpu = malloc(sizeof(struct Cpu));
   cpu->memory = calloc(mem_size, sizeof(char));
-  cpu->instructions = cpu->memory;
   cpu->flags.halt = true;
   cpu->regs.esp = mem_size;
   return cpu;
@@ -22,7 +21,7 @@ void load_program(struct Cpu *cpu, char *program) {
 }
 
 void run_cmd(struct Cpu *cpu) {
-  struct PackedInstr instr = decode(&(cpu->memory));
+  struct PackedInstr instr = decode(cpu);
   instr.i(cpu, instr.args);
 }
 

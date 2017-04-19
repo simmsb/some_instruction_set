@@ -32,22 +32,27 @@ void cpu_splitargs(uint32_t args, uint16_t *arg1, uint16_t *arg2) {
   *arg2 = (uint16_t) (args & 0xFFFF);
 }
 
-struct PackedInstr decode(uint16_t **stream) {
+struct PackedInstr decode(struct Cpu *cpu) {
   struct PackedInstr i;
+  uint16_t *stream = cpu->memory + cpu->regs.rip++;
 
-  uint16_t opcode = **stream & 0x3FFF; // remove upper two bits
-  i.n = (**stream & 0xC000) >> 14;
+  uint16_t opcode = *stream & 0x3FFF; // remove upper two bits
+  i.n = (*stream & 0xC000) >> 14;
   switch (i.n) {
     case 0:
       i.i = noArgs(opcode);
       break;
     case 1:
       i.i = oneArg(opcode);
-      i.arg1 = *++*stream;
+      i.arg1 = *++stream;
+      cpu->regs.rip++;
+      break;
     case 2:
       i.i = twoArgs(opcode);
-      i.arg1 = *++*stream;
-      i.arg2 = *++*stream;
+      i.arg1 = *++stream;
+      i.arg2 = *++stream;
+      cpu->regs.rip += 2;
+      break;
     default:
       goto ERROR;
   }
@@ -75,7 +80,7 @@ instruction noArgs(uint16_t opcode) {
     exit(1);
 }
 
-instruction oneArg(char opcode) {
+instruction oneArg(uint16_t opcode) {
   switch (opcode) {
     case 0:
       return sjmp;
@@ -92,7 +97,7 @@ instruction oneArg(char opcode) {
     exit(1);
 }
 
-instruction twoArgs(char opcode) {
+instruction twoArgs(uint16_t opcode) {
   switch (opcode) {
     case 0:
       return tst;
@@ -116,8 +121,7 @@ void nop(OPERATION_I) {
 }
 
 void ret(OPERATION_I) {
-  size_t upper = (size_t) cpu_popstack(cpu); // do this because memory is bytes and we need a 16 bit pointer
-  size_t lower = (size_t) cpu_popstack(cpu);
+  size_t data = (size_t) cpu_popstack(cpu); // do this because memory is bytes and we need a 16 bit pointer
   cpu->instructions = (char *) ((upper << 8) + lower);
 }
 
