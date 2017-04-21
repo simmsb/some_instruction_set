@@ -84,6 +84,12 @@ instruction oneArg(uint16_t opcode) {
       return psh;
     case 2:
       return pop;
+    case 3:
+      return jeq;
+    case 4:
+      return jle;
+    case 5:
+      return jme;
     default:
       goto ERROR;
   }

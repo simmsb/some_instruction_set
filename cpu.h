@@ -50,7 +50,10 @@ void nop(struct Cpu *, uint16_t, uint16_t);
 void ret(struct Cpu *, uint16_t, uint16_t);
 void call(struct Cpu *, uint16_t, uint16_t);
 
-void jmp(struct Cpu *, uint16_t, uint16_t); // short jump (char)
+void jmp(struct Cpu *, uint16_t, uint16_t);
+void jeq(struct Cpu *, uint16_t, uint16_t);
+void jle(struct Cpu *, uint16_t, uint16_t);
+void jme(struct Cpu *, uint16_t, uint16_t);
 void psh(struct Cpu *, uint16_t, uint16_t);
 void pop(struct Cpu *, uint16_t, uint16_t);
 
