@@ -37,22 +37,18 @@ struct PackedInstr decode(struct Cpu *cpu) {
   uint16_t *stream = cpu->memory + cpu->regs.rip++;
 
   uint16_t opcode = *stream & 0x3FFF; // remove upper two bits
-  i.n = (*stream & 0xC000) >> 14;
-  switch (i.n) {
+  int args = (*stream & 0xC000) >> 14;
+  switch (args) {
     case 0:
       i.i = noArgs(opcode);
-      break;
     case 1:
       i.i = oneArg(opcode);
-      i.arg1 = *++stream;
-      cpu->regs.rip++;
+      i.arg1 = *(cpu->memory + cpu->regs.rip++);
       break;
     case 2:
       i.i = twoArgs(opcode);
-      i.arg1 = *++stream;
-      i.arg2 = *++stream;
-      cpu->regs.rip += 2;
-      break;
+      i.arg1 = *(cpu->memory + cpu->regs.rip++);
+      i.arg2 = *(cpu->memory + cpu->regs.rip++);
     default:
       goto ERROR;
   }
@@ -83,7 +79,7 @@ instruction noArgs(uint16_t opcode) {
 instruction oneArg(uint16_t opcode) {
   switch (opcode) {
     case 0:
-      return sjmp;
+      return jmp;
     case 1:
       return psh;
     case 2:
@@ -121,24 +117,88 @@ void nop(OPERATION_I) {
 }
 
 void ret(OPERATION_I) {
-  size_t data = (size_t) cpu_popstack(cpu); // do this because memory is bytes and we need a 16 bit pointer
-  cpu->instructions = (char *) ((upper << 8) + lower);
+  cpu->regs.rip = cpu_popstack(cpu);
 }
 
 void call(OPERATION_I) {
-  size_t address_upper = (size_t) cpu_popstack(cpu); // get location to jump to
-  size_t address_lower = (size_t) cpu_popstack(cpu);
+  uint16_t loc = cpu_popstack(cpu); // get location to jump to
+  uint16_t current = cpu->regs.rip;
+  cpu_pushstack(cpu, ++current);
 
-  size_t current_address = (size_t) cpu->instructions; // get return address
-  size_t return_lower = current_address & 0xff;
-  size_t return_upper = (current_address >> 8) & 0xff;
-
-  cpu_pushstack(cpu, (char) return_upper);
-  cpu_pushstack(cpu, (char) return_lower);
-
-  cpu->instructions = (char *) ((address_upper << 8) + address_lower); // set instruction pointer
+  cpu->regs.rip = loc;
 }
 
-void sjmp(OPERATION_I) {
- // TODO: this
+void jmp(OPERATION_I) {
+  cpu->regs.rip = arg1;
+}
+
+uint16_t cpu_getloc(struct Cpu *cpu, uint16_t location) {
+  uint16_t num;
+
+  if (location & 0x4000) { // if register
+    int regnum = ((location & 0x3C00) >> 10) & 0xF;
+    switch (regnum) {
+      case 0:
+        num = cpu->regs.aaa;
+        break
+      case 1:
+        num = cpu->regs.bbb;
+        break;
+      case 2:
+        num = cpu->regs.ccc;
+        break;
+      case 3:
+        num = cpu->regs.ddd;
+        break;
+      case 4:
+        num = cpu->regs.eee;
+        break;
+      case 5:
+        num = cpu->regs.fff;
+        break;
+      case 6:
+        num = cpu->regs.ggg;
+        break;
+      case 7:
+        num = cpu->regs.esp;
+        break;
+      case 8:
+        num = cpu->regs.epb;
+        break;
+      case 9:
+        num = cpu->regs.rip;
+        break;
+      default:
+        num = 0;
+    }
+  } else { // abs
+    num = location & 0x3FFF;
+  }
+
+  if (location & 0x8000) { // if deref
+    num = *(cpu->memory + num);
+  }
+  return num;
+}
+
+void psh(OPERATION_I) {
+  cpu_pushstack(cpu, cpu_getloc(cpu, arg1));
+}
+
+void pop(OPERATION_I) {
+  uint16_t val = cpu_popstack(cpu);
+  *(cpu->memory + cpu_getloc(cpu, arg1)) = val;
+}
+
+void tst(OPERATION_I) {
+  uint16_t a = cpu_getloc(cpu, arg1);
+  uint16_t b = cpu_getloc(cpu, arg2);
+
+  cpu->flags.zero = a == b;
+  cpu->flags.sign = (a - b) & 0x7FFF;
+}
+
+void mov(OPERATION_I) {
+  uint16_t from = cpu_getloc(cpu, arg1);
+  *(cpu->memory + from) = cpu_getloc(cpu, arg2);
 }

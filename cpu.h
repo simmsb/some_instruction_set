@@ -55,4 +55,4 @@ void psh(struct Cpu *, uint16_t, uint16_t);
 void pop(struct Cpu *, uint16_t, uint16_t);
 
 void tst(struct Cpu *, uint16_t, uint16_t);
-void mov(struct Cpu *, uint16_t, uint16_t);
+void mov(struct Cpu *, uint16_t, uint16_t); // move memory at location arg1 to location at arg2
