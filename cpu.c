@@ -12,12 +12,9 @@ struct Cpu *init_cpu(int mem_size) {
   return cpu;
 }
 
-void load_program(struct Cpu *cpu, uint16_t *program) {
-  uint16_t *base = cpu->memory; // copy location of cpu ram
-  while (*program++) { // load program into bottom of memory
-    *base = *program;
-    ++base; // ooh this is gonna give some sigsegvs isn't it
-  }
+void load_program(struct Cpu *cpu, uint16_t *program, int length) {
+  for (int i=0; i < length; i++)
+    cpu->memory[i] = program[i];
 }
 
 void run_cmd(struct Cpu *cpu) {
@@ -38,7 +35,7 @@ int main() {
     printf("%" PRIu16 "\n", program[i]);
   }
   printf("\n");
-  load_program(cpu, program);
+  load_program(cpu, program, 9);
   run(cpu);
   return 0;
 }

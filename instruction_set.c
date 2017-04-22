@@ -22,11 +22,10 @@ first two bits decide on length of instruction (00, 01, 10)
 
 struct PackedInstr decode(struct Cpu *cpu) {
   struct PackedInstr i;
-  uint16_t *stream = cpu->memory + cpu->regs[rip]++;
+  uint16_t instruction = cpu->memory[cpu->regs[rip]++];
 
-  uint16_t opcode = *stream & 0x3FFF; // remove upper two bits
-  int args = (*stream & 0xC000) >> 14;
-  printf("Decoding instruction with ID: %" PRIu16 ", num args: %" PRIu16 ", full block: %" PRIu16 "\n", opcode, args, *stream);
+  uint16_t opcode = instruction & 0x3FFF; // remove upper two bits
+  int args = (instruction & 0xC000) >> 14;
   switch (args) {
     case 0:
       i.i = noArgs(opcode);
