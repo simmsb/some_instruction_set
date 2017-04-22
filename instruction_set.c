@@ -69,24 +69,15 @@ instruction noArgs(uint16_t opcode) {
 
 instruction oneArg(uint16_t opcode) {
   switch (opcode) {
-    case 0:
-      return jmp;
-    case 1:
-      return psh;
-    case 2:
-      return pop;
-    case 3:
-      return jeq;
-    case 4:
-      return jne;
-    case 5:
-      return jle;
-    case 6:
-      return jme;
-    case 7:
-      return ptc;
-    default:
-      goto ERROR;
+    case 0: return jmp;
+    case 1: return psh;
+    case 2: return pop;
+    case 3: return jeq;
+    case 4: return jne;
+    case 5: return jle;
+    case 6: return jme;
+    case 7: return ptc;
+    default: goto ERROR;
   }
 
   ERROR:
@@ -96,12 +87,13 @@ instruction oneArg(uint16_t opcode) {
 
 instruction twoArgs(uint16_t opcode) {
   switch (opcode) {
-    case 0:
-      return tst;
-    case 1:
-      return str;
-    default:
-      goto ERROR;
+    case 0: return tst;
+    case 1: return str;
+    case 2: return add;
+    case 3: return sub;
+    case 4: return divn;
+    case 5: return rem;
+    default: goto ERROR;
   }
 
   ERROR:
@@ -173,4 +165,20 @@ void jme(OPERATION_I) {  // more than
 
 void ptc(OPERATION_I) {
   printf("%c", (char) arg1);
+}
+
+void add(OPERATION_I) {
+  cpu_setreg(cpu, acc, arg1 + arg2);
+}
+void sub(OPERATION_I) {
+  cpu_setreg(cpu, acc, arg1 - arg2);
+}
+void mul(OPERATION_I) {
+  cpu_setreg(cpu, acc, arg1 * arg2);
+}
+void divn(OPERATION_I) {
+  cpu_setreg(cpu, acc, arg1 / arg2);
+}
+void rem(OPERATION_I) {
+  cpu_setreg(cpu, acc, arg1 % arg2);
 }

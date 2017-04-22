@@ -2,7 +2,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#define NUM_REGS 10
+#define NUM_REGS 11
 
 enum Registers { // used for assember, etc
   aaa = 0,
@@ -14,7 +14,8 @@ enum Registers { // used for assember, etc
   ggg = 6,
   esp = 7,
   epb = 8,
-  rip = 9
+  rip = 9,
+  acc = 10,
 };
 
 struct Flags {
@@ -71,3 +72,10 @@ void ptc(struct Cpu *, uint16_t, uint16_t);
 void tst(struct Cpu *, uint16_t, uint16_t);
 void str(struct Cpu *, uint16_t, uint16_t); // value of arg1 -> memory location at arg2
 void lod(struct Cpu *, uint16_t, uint16_t); // value of arg1 -> register of r2
+
+// math operations (2 args)
+void add(struct Cpu *, uint16_t, uint16_t);
+void sub(struct Cpu *, uint16_t, uint16_t);
+void mul(struct Cpu *, uint16_t, uint16_t);
+void divn(struct Cpu *, uint16_t, uint16_t);
+void rem(struct Cpu *, uint16_t, uint16_t);
