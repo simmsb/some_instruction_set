@@ -29,6 +29,7 @@ struct PackedInstr decode(struct Cpu *cpu) {
   switch (args) {
     case 0:
       i.i = noArgs(opcode);
+      break;
     case 1:
       i.i = oneArg(opcode);
       i.arg1 = *(cpu->memory + cpu->regs[rip]++);
