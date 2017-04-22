@@ -56,6 +56,8 @@ instruction noArgs(uint16_t opcode) {
       return ret;
     case 2:
       return call;
+    case 3:
+      return halt;
     default:
       goto ERROR;
   }

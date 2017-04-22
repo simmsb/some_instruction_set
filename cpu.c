@@ -33,8 +33,8 @@ void run(struct Cpu *cpu) {
 
 int main() {
   struct Cpu *cpu = init_cpu(DEFAULT_SIZE);
-  uint16_t program[4] = {(uint16_t) 0x40070057, (uint16_t) 0x40070065, (uint16_t) 0x40070065, (uint16_t) 0x4007000A};
-  for (int i=0; i<4; i++) {
+  uint16_t program[9] = {0x4007, 0x57, 0x4007, 0x65, 0x4007, 0x77, 0x4007, 0xa, 0x3};
+  for (int i=0; i<9; i++) {
     printf("%" PRIu16 "\n", program[i]);
   }
   printf("\n");

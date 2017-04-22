@@ -57,6 +57,7 @@ void cpu_setreg(struct Cpu *, uint16_t, uint16_t);
 void nop(struct Cpu *, uint16_t, uint16_t);
 void ret(struct Cpu *, uint16_t, uint16_t);
 void call(struct Cpu *, uint16_t, uint16_t);
+void halt(struct Cpu *, uint16_t, uint16_t);
 
 void jmp(struct Cpu *, uint16_t, uint16_t);
 void jeq(struct Cpu *, uint16_t, uint16_t);
