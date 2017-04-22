@@ -1,17 +1,20 @@
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdbool.h>
 
-struct Registers {
-  uint16_t aaa, //─┐
-           bbb, // │
-           ccc, // │
-           ddd, // ├─ general purpose registers
-           eee, // │
-           fff, // │
-           ggg, //─┘
-           esp, // stack pointer
-           epb, // base pointer
-           rip; // instruction pointer
+#define NUM_REGS 10
+
+enum Registers { // used for assember, etc
+  aaa = 0,
+  bbb = 1,
+  ccc = 2,
+  ddd = 3,
+  eee = 4,
+  fff = 5,
+  ggg = 6,
+  esp = 7,
+  epb = 8,
+  rip = 9
 };
 
 struct Flags {
@@ -25,7 +28,7 @@ struct Flags {
 
 struct Cpu {
   uint16_t *memory;
-  struct Registers regs;
+  uint16_t regs[NUM_REGS];
   struct Flags flags;
 };
 
@@ -46,16 +49,24 @@ struct PackedInstr {
 
 struct PackedInstr decode(struct Cpu *);
 
+uint16_t cpu_getloc(struct Cpu *, uint16_t);
+uint16_t cpu_popstack(struct Cpu *);
+void cpu_pushstack(struct Cpu *, uint16_t);
+void cpu_setreg(struct Cpu *, uint16_t, uint16_t);
+
 void nop(struct Cpu *, uint16_t, uint16_t);
 void ret(struct Cpu *, uint16_t, uint16_t);
 void call(struct Cpu *, uint16_t, uint16_t);
 
 void jmp(struct Cpu *, uint16_t, uint16_t);
 void jeq(struct Cpu *, uint16_t, uint16_t);
+void jne(struct Cpu *, uint16_t, uint16_t);
 void jle(struct Cpu *, uint16_t, uint16_t);
 void jme(struct Cpu *, uint16_t, uint16_t);
 void psh(struct Cpu *, uint16_t, uint16_t);
 void pop(struct Cpu *, uint16_t, uint16_t);
+void ptc(struct Cpu *, uint16_t, uint16_t);
 
 void tst(struct Cpu *, uint16_t, uint16_t);
-void mov(struct Cpu *, uint16_t, uint16_t); // move memory at location arg1 to location at arg2
+void str(struct Cpu *, uint16_t, uint16_t); // value of arg1 -> memory location at arg2
+void lod(struct Cpu *, uint16_t, uint16_t); // value of arg1 -> register of r2
