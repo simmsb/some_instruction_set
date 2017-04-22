@@ -23,9 +23,12 @@ void run_cmd(struct Cpu *cpu) {
 }
 
 void run(struct Cpu *cpu) {
+  puts("Starting cpu");
   while (cpu->flags.halt) {
     run_cmd(cpu);
+    //printf("Current rip = %" PRIu16 "\n", cpu->regs[rip]);
   }
+  puts("Closing cpu");
 }
 
 int main() {
