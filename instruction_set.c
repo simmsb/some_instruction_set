@@ -49,17 +49,14 @@ struct PackedInstr decode(struct Cpu *cpu) {
 }
 
 instruction noArgs(uint16_t opcode) {
-  printf("Opcode = %" PRIu16 "\n", opcode);
   switch (opcode) {
     case 0:
-      printf("nopping\n");
       return nop;
     case 1:
       return ret;
     case 2:
       return call;
     case 3:
-      printf("halting\n");
       return halt;
     default:
       goto ERROR;
@@ -113,7 +110,6 @@ instruction twoArgs(uint16_t opcode) {
 }
 
 void halt(OPERATION_I){
-  printf("Stopping\n");
   cpu->flags.halt = false;
 }
 
@@ -122,7 +118,6 @@ void nop(OPERATION_I) {
 }
 
 void ret(OPERATION_I) {
-  printf("ret\n");
   cpu_setreg(cpu, rip, cpu_popstack(cpu));
 }
 
@@ -135,7 +130,6 @@ void call(OPERATION_I) {
 }
 
 void jmp(OPERATION_I) {
-  printf("jmp to location %" PRIu16 "\n", arg1);
   cpu_setreg(cpu, rip, arg1);
 }
 
@@ -162,22 +156,18 @@ void str(OPERATION_I) {
 }
 
 void jeq(OPERATION_I) {
-  printf("jeq\n");
   if (!cpu->flags.zero) cpu_setreg(cpu, rip, arg1);
 }
 
 void jne(OPERATION_I) {
-  printf("jne\n");
   if (cpu->flags.zero) cpu_setreg(cpu, rip, arg1);
 }
 
 void jle(OPERATION_I) {  // less than
-  printf("jle\n");
   if (cpu->flags.sign) cpu_setreg(cpu, rip, arg1);
 }
 
 void jme(OPERATION_I) {  // more than
-  printf("jme\n");
   if (!cpu->flags.sign) cpu_setreg(cpu, rip, arg1);
 }
 

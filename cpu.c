@@ -27,18 +27,13 @@ void run(struct Cpu *cpu) {
   puts("Starting cpu");
   while (cpu->flags.halt) {
     run_cmd(cpu);
-    //printf("Current rip = %" PRIu16 "\n", cpu->regs[rip]);
   }
   puts("Closing cpu");
 }
 
 int main() {
   struct Cpu *cpu = init_cpu(DEFAULT_SIZE);
-  uint16_t program[9] = {0x4007, 0x57, 0x4007, 0x65, 0x4007, 0x77, 0x4007, 0xa, 0x3};
-  for (int i=0; i<9; i++) {
-    printf("%" PRIu16 "\n", program[i]);
-  }
-  printf("\n");
+  uint16_t program[9] = {0x4007, 0x57, 0x4007, 0x65, 0x4007, 0x77, 0x4007, 0xa, 0x3}; // TODO: program loader
   load_program(cpu, program, 9);
   run(cpu);
   return 0;
