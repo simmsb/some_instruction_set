@@ -9,6 +9,7 @@ struct Cpu *init_cpu(int mem_size) {
   cpu->memory = calloc(mem_size, sizeof(uint16_t));
   cpu->flags.halt = true;
   cpu->regs[esp] = mem_size;
+  cpu->regs[rip] = 0; // ensure RIP always starts at 0
   return cpu;
 }
 
