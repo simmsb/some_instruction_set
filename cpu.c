@@ -67,7 +67,10 @@ int main(int argc, char **argv) {
   uint16_t *program = parse_hex(argv[1]);
 
   load_program(cpu, program, strlen(argv[1])/2);
+  free(program);
   run(cpu);
+  free(cpu->memory);
+  free(cpu);
   return 0;
 }
 
