@@ -1,8 +1,10 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <stdbool.h>
-
 #define NUM_REGS 11
+
+typedef struct Node Node;
+struct Cpu;
 
 enum Registers { // used for assember, etc
   aaa = 0,
@@ -31,6 +33,13 @@ struct Cpu {
   uint16_t *memory;
   uint16_t regs[NUM_REGS];
   struct Flags flags;
+  Node *interrupts;
+  uint64_t ticks;
+};
+
+struct Interrupt {
+  void (*callback)(struct Cpu *);
+  uint64_t when;
 };
 
 typedef void (*instruction)(struct Cpu *, uint16_t, uint16_t);
@@ -54,6 +63,7 @@ uint16_t cpu_getloc(struct Cpu *, uint16_t);
 uint16_t cpu_popstack(struct Cpu *);
 void cpu_pushstack(struct Cpu *, uint16_t);
 void cpu_setreg(struct Cpu *, uint16_t, uint16_t);
+void check_interrupts(struct Cpu *);
 
 void nop(struct Cpu *, uint16_t, uint16_t);
 void ret(struct Cpu *, uint16_t, uint16_t);
@@ -79,3 +89,12 @@ void sub(struct Cpu *, uint16_t, uint16_t);
 void mul(struct Cpu *, uint16_t, uint16_t);
 void divn(struct Cpu *, uint16_t, uint16_t);
 void rem(struct Cpu *, uint16_t, uint16_t);
+
+typedef struct Node {
+  Node *next;
+  Node *prev;
+  struct Interrupt *irq;
+} Node;
+
+void free_node(Node **, Node *);
+void push_node(Node **, struct Interrupt *);

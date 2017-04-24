@@ -28,6 +28,8 @@ void run(struct Cpu *cpu) {
   puts("Starting cpu");
   while (cpu->flags.halt) {
     run_cmd(cpu);
+    check_interrupts(cpu);
+    cpu->ticks++;
   }
   puts("Closing cpu");
 }
@@ -99,3 +101,49 @@ inline void cpu_pushstack(struct Cpu *cpu, uint16_t val) {
 }
 
 // print `Wew\n` -> 0x4007005740070065400700774007000A0003
+
+void schedule(struct Cpu *cpu, struct Interrupt *i) {
+  push_node(&cpu->interrupts, i);
+}
+
+void deschedule(struct Cpu *cpu, Node *node) { // might want to do more stuff sometime
+  free_node(&cpu->interrupts, node);
+}
+
+void check_interrupts(struct Cpu *cpu) {
+  Node *lst = cpu->interrupts;
+  while (lst != NULL) {
+    if (lst->irq->when < cpu->ticks) {
+      lst->irq->callback(cpu);
+      Node *next = lst->next; // save next                      v
+      free_node(&cpu->interrupts, lst); // free node: | prev | lst | next | -> | prev | next |
+      lst = next; // move next
+    } else { // only increment here, since free will pull the next node along for us
+      lst = lst->next;
+    }
+  }
+}
+
+
+void free_node(Node **head, Node *node) {
+  if (*head == node)
+    *head = node->next;
+
+  if (node->next != NULL)
+    node->next->prev = node->prev;
+
+  if (node->prev != NULL)
+    node->prev->next = node->next;
+
+  free(node->irq);
+  free(node);
+}
+
+void push_node(Node **head, struct Interrupt *irq) {
+  Node *ptr = malloc(sizeof(Node));
+  ptr->next = *head;
+  ptr->irq = irq;
+  if (*head != NULL)
+    (*head)->prev = ptr;
+  *head = ptr;
+}
