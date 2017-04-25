@@ -19,7 +19,6 @@ first two bits decide on length of instruction (00, 01, 10)
 #include <stdlib.h>
 #include <stdio.h>
 
-
 struct PackedInstr decode(struct Cpu *cpu) {
   struct PackedInstr i;
   uint16_t instruction = cpu->memory[cpu->regs[rip]++];
@@ -93,6 +92,15 @@ instruction twoArgs(uint16_t opcode) {
     case 3: return sub;
     case 4: return divn;
     case 5: return rem;
+    case 6: return flc;
+    case 7: return clf;
+    case 8: return stf;
+    case 9: return ldf;
+    case 10: return mvf;
+    case 11: return fad;
+    case 12: return fsb;
+    case 13: return fmu;
+    case 14: return fdv;
     default: goto ERROR;
   }
 
@@ -176,9 +184,69 @@ void sub(OPERATION_I) {
 void mul(OPERATION_I) {
   cpu_setreg(cpu, acc, arg1 * arg2);
 }
+
 void divn(OPERATION_I) {
   cpu_setreg(cpu, acc, arg1 / arg2);
 }
 void rem(OPERATION_I) {
   cpu_setreg(cpu, acc, arg1 % arg2);
+}
+
+void flc(OPERATION_I) { // convert arg1 and arg2 into float and store in float reg aaa
+  uint16_t lower = cpu_getloc(cpu, arg2);
+  uint16_t upper = cpu_getloc(cpu, arg1);
+
+  float value = (float) (upper << 16) + lower;
+  cpu->fregs[aaa ] = value;
+}
+
+void clf(OPERATION_I) { // convert float register aaa into two ints and store in arg1 and arg2
+  float value = cpu->fregs[aaa];
+  uint32_t c = (uint32_t) value;
+
+  uint16_t upper = (c >> 16) & 0xFFFF;
+  uint16_t lower = c & 0xFFFF;
+
+  *(cpu->memory + cpu_getloc(cpu, arg1)) = upper;
+  *(cpu->memory + cpu_getloc(cpu, arg2)) = lower;
+}
+
+void stf(OPERATION_I) { // store upper 2 bytes of float in arg1, lower 2 bytes in arg2 (no cast)
+  float value = cpu->fregs[aaa];
+  uint32_t c = *(uint32_t *) &value;
+
+  uint16_t upper = (c >> 16) & 0xFFFF;
+  uint16_t lower = c & 0xFFFF;
+
+  *(cpu->memory + cpu_getloc(cpu, arg1)) = upper;
+  *(cpu->memory + cpu_getloc(cpu, arg2)) = lower;
+}
+
+void ldf(OPERATION_I) { // load a float from memory into float register aaa (no cast)
+  uint16_t lower = cpu_getloc(cpu, arg2);
+  uint16_t upper = cpu_getloc(cpu, arg1);
+
+  uint32_t value = (upper << 16) + lower;
+  float fval = *(float *) &value;
+  cpu->fregs[aaa] = fval;
+}
+
+void mvf(OPERATION_I) {
+  cpu->fregs[cpu_getloc(cpu, arg1)] = cpu->regs[cpu_getloc(cpu, arg2)];
+}
+
+void fad(OPERATION_I) {
+  cpu->fregs[acc] = cpu->fregs[cpu_getloc(cpu, arg1)] + cpu->fregs[cpu_getloc(cpu, arg2)];
+}
+
+void fsb(OPERATION_I) {
+  cpu->fregs[acc] = cpu->fregs[cpu_getloc(cpu, arg1)] - cpu->fregs[cpu_getloc(cpu, arg2)];
+}
+
+void fmu(OPERATION_I) {
+  cpu->fregs[acc] = cpu->fregs[cpu_getloc(cpu, arg1)] * cpu->fregs[cpu_getloc(cpu, arg2)];
+}
+
+void fdv(OPERATION_I) {
+  cpu->fregs[acc] = cpu->fregs[cpu_getloc(cpu, arg1)] / cpu->fregs[cpu_getloc(cpu, arg2)];
 }

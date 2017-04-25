@@ -32,6 +32,7 @@ struct Flags {
 struct Cpu {
   uint16_t *memory;
   uint16_t regs[NUM_REGS];
+  float fregs[NUM_REGS];
   struct Flags flags;
   Node *interrupts;
   uint64_t ticks;
@@ -89,6 +90,15 @@ void sub(struct Cpu *, uint16_t, uint16_t);
 void mul(struct Cpu *, uint16_t, uint16_t);
 void divn(struct Cpu *, uint16_t, uint16_t);
 void rem(struct Cpu *, uint16_t, uint16_t);
+void flc(struct Cpu *, uint16_t, uint16_t);
+void clf(struct Cpu *, uint16_t, uint16_t);
+void stf(struct Cpu *, uint16_t, uint16_t);
+void ldf(struct Cpu *, uint16_t, uint16_t);
+void mvf(struct Cpu *, uint16_t, uint16_t); // move float between regs
+void fad(struct Cpu *, uint16_t, uint16_t); // add freg arg1, freg arg2 store in float reg acc
+void fsb(struct Cpu *, uint16_t, uint16_t);
+void fmu(struct Cpu *, uint16_t, uint16_t);
+void fdv(struct Cpu *, uint16_t, uint16_t);
 
 typedef struct Node {
   Node *next;

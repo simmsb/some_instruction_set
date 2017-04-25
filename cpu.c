@@ -115,7 +115,7 @@ void check_interrupts(struct Cpu *cpu) {
   while (lst != NULL) {
     if (lst->irq->when < cpu->ticks) {
       lst->irq->callback(cpu);
-      Node *next = lst->next; // save next                      v
+      Node *next = lst->xt; // save next                      v
       free_node(&cpu->interrupts, lst); // free node: | prev | lst | next | -> | prev | next |
       lst = next; // move next
     } else { // only increment here, since free will pull the next node along for us
