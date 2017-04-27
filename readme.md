@@ -65,12 +65,12 @@ enum Registers {
   acc = 10,
 };
 ```
-Example for accessing register `ggg`:
+Example for accessing register `ggg`:  
 `b0100000000000110` -> `0x4006`
 
-To write `*bbb` to a register `aaa`
-aaa  -> `b0100000000000000` -> `0x4000`
-\*bbb -> `b1100000000000001` -> `0xC001`
-mov -> `0x8001`
+To write `*bbb` to a register `aaa`  
+aaa  -> `b0100000000000000` -> `0x4000`  
+\*bbb -> `b1100000000000001` -> `0xC001`  
+mov -> `0x8001`  
 
 final instruction -> `0x80014000C001`
