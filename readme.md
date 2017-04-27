@@ -3,14 +3,14 @@
 # Operand Types
 
 * `data`      -> `bXY00000000000000`
- - If X is set: dereference value
- - If Y is set: get register
- - If Y not set: use abs
+   - If X is set: dereference value
+   - If Y is set: get register
+   - If Y not set: use abs
 
  * `location` -> `bXY00000000000000`
-  - If X is set: set memory at deref of value
-  - If Y is set: use register
-  - If Y not set: use memory address
+    - If X is set: set memory at deref of value
+    - If Y is set: use register
+    - If Y not set: use memory address
 
 # instruction table
 
@@ -46,3 +46,31 @@
 | fsb    | 0x800D | data      | data      | Subtract float register arg2 from float register arg1 and store in float register acc        |
 | fmu    | 0x800E | data      | data      | Multiply float register arg1 with float register arg2 and store in float register acc        |
 | fdv    | 0x800F | data      | data      | Divide float register arg1 with float register arg2 and store in float register acc          |
+
+
+# Registers
+Registers are defined by the enum:
+```c
+enum Registers {
+  aaa = 0,
+  bbb = 1,
+  ccc = 2,
+  ddd = 3,
+  eee = 4,
+  fff = 5,
+  ggg = 6,
+  esp = 7,
+  epb = 8,
+  rip = 9,
+  acc = 10,
+};
+```
+Example for accessing register `ggg`:
+`b0100000000000110` -> `0x4006`
+
+To write `*bbb` to a register `aaa`
+aaa  -> `b0100000000000000` -> `0x4000`
+\*bbb -> `b1100000000000001` -> `0xC001`
+mov -> `0x8001`
+
+final instruction -> `0x80014000C001`
