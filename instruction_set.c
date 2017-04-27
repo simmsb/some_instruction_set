@@ -49,16 +49,11 @@ struct PackedInstr decode(struct Cpu *cpu) {
 
 instruction noArgs(uint16_t opcode) {
   switch (opcode) {
-    case 0:
-      return nop;
-    case 1:
-      return ret;
-    case 2:
-      return call;
-    case 3:
-      return halt;
-    default:
-      goto ERROR;
+    case 0: return nop;
+    case 1: return ret;
+    case 2: return call;
+    case 3: return halt;
+    default: goto ERROR;
   }
 
   ERROR:
@@ -87,20 +82,21 @@ instruction oneArg(uint16_t opcode) {
 instruction twoArgs(uint16_t opcode) {
   switch (opcode) {
     case 0: return tst;
-    case 1: return str;
+    case 1: return mov;
     case 2: return add;
     case 3: return sub;
-    case 4: return divn;
-    case 5: return rem;
-    case 6: return flc;
-    case 7: return clf;
-    case 8: return stf;
-    case 9: return ldf;
-    case 10: return mvf;
-    case 11: return fad;
-    case 12: return fsb;
-    case 13: return fmu;
-    case 14: return fdv;
+    case 4: return mul;
+    case 5: return divn;
+    case 6: return rem;
+    case 7: return flc;
+    case 8: return clf;
+    case 9: return stf;
+    case 10: return ldf;
+    case 11: return mvf;
+    case 12: return fad;
+    case 13: return fsb;
+    case 14: return fmu;
+    case 15: return fdv;
     default: goto ERROR;
   }
 
@@ -139,7 +135,7 @@ void psh(OPERATION_I) {
 
 void pop(OPERATION_I) {
   uint16_t val = cpu_popstack(cpu);
-  *(cpu->memory + cpu_getloc(cpu, arg1)) = val;
+  cpu_setloc(cpu, arg1, val);
 }
 
 void tst(OPERATION_I) {
@@ -150,9 +146,8 @@ void tst(OPERATION_I) {
   cpu->flags.sign = a < b;
 }
 
-void str(OPERATION_I) {
-  uint16_t from = cpu_getloc(cpu, arg1);
-  *(cpu->memory + from) = cpu_getloc(cpu, arg2);
+void mov(OPERATION_I) {
+  cpu_setloc(cpu, arg1, cpu_getloc(cpu, arg2));
 }
 
 void jeq(OPERATION_I) {
@@ -207,8 +202,8 @@ void clf(OPERATION_I) { // convert float register aaa into two ints and store in
   uint16_t upper = (c >> 16) & 0xFFFF;
   uint16_t lower = c & 0xFFFF;
 
-  *(cpu->memory + cpu_getloc(cpu, arg1)) = upper;
-  *(cpu->memory + cpu_getloc(cpu, arg2)) = lower;
+  cpu_setloc(cpu, arg1, upper);
+  cpu_setloc(cpu, arg2, lower);
 }
 
 void stf(OPERATION_I) { // store upper 2 bytes of float in arg1, lower 2 bytes in arg2 (no cast)
@@ -218,8 +213,8 @@ void stf(OPERATION_I) { // store upper 2 bytes of float in arg1, lower 2 bytes i
   uint16_t upper = (c >> 16) & 0xFFFF;
   uint16_t lower = c & 0xFFFF;
 
-  *(cpu->memory + cpu_getloc(cpu, arg1)) = upper;
-  *(cpu->memory + cpu_getloc(cpu, arg2)) = lower;
+  cpu_setloc(cpu, arg1, upper);
+  cpu_setloc(cpu, arg1, lower);
 }
 
 void ldf(OPERATION_I) { // load a float from memory into float register aaa (no cast)

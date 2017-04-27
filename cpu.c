@@ -82,7 +82,9 @@ void cpu_setreg(struct Cpu *cpu, uint16_t reg, uint16_t value) {
 
 uint16_t cpu_getloc(struct Cpu *cpu, uint16_t location) {
   uint16_t num;
-
+  // bXY00000000000000
+  // If X is set, Dereference
+  // If Y is set, get value of register
   if (location & 0x4000) { // if register
     int regnum = ((location & 0x3C00) >> 10) & 0xF;
     num = cpu->regs[regnum];
@@ -92,12 +94,21 @@ uint16_t cpu_getloc(struct Cpu *cpu, uint16_t location) {
   return (location & 0x8000)?*(cpu->memory + num):num;
 }
 
+void cpu_setloc(struct Cpu *cpu, uint16_t location, uint16_t data) {
+  if (location & 0x8000) *(cpu->memory + cpu_getloc(cpu, location & 0x3FFF)) = data;
+  else {
+    if (location & 0x4000)
+      cpu_setreg(cpu, location & 0x1FFF, data);
+    else *(cpu->memory + (location & 0x1FFF)) = data;
+  }
+}
+
 inline uint16_t cpu_popstack(struct Cpu *cpu) {
-  return cpu->memory[++cpu->regs[esp]]; // move up, get value
+  return cpu->memory[cpu->regs[esp]++]; // get value, move up
 }
 
 inline void cpu_pushstack(struct Cpu *cpu, uint16_t val) {
-  cpu->memory[cpu->regs[esp]--] = val; // set value, move down
+  cpu->memory[--cpu->regs[esp]] = val; // move down, set value
 }
 
 // print `Wew\n` -> 0x4007005740070065400700774007000A0003
@@ -115,7 +126,7 @@ void check_interrupts(struct Cpu *cpu) {
   while (lst != NULL) {
     if (lst->irq->when < cpu->ticks) {
       lst->irq->callback(cpu);
-      Node *next = lst->xt; // save next                      v
+      Node *next = lst->next; // save next                      v
       free_node(&cpu->interrupts, lst); // free node: | prev | lst | next | -> | prev | next |
       lst = next; // move next
     } else { // only increment here, since free will pull the next node along for us

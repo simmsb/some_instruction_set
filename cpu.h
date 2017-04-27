@@ -64,13 +64,16 @@ uint16_t cpu_getloc(struct Cpu *, uint16_t);
 uint16_t cpu_popstack(struct Cpu *);
 void cpu_pushstack(struct Cpu *, uint16_t);
 void cpu_setreg(struct Cpu *, uint16_t, uint16_t);
+void cpu_setloc(struct Cpu *, uint16_t, uint16_t);
 void check_interrupts(struct Cpu *);
 
-void nop(struct Cpu *, uint16_t, uint16_t);
+// 0 arg ops
+void nop(struct Cpu *, uint16_t, uint16_t);  // 0x0000
 void ret(struct Cpu *, uint16_t, uint16_t);
 void call(struct Cpu *, uint16_t, uint16_t);
 void halt(struct Cpu *, uint16_t, uint16_t);
 
+// 1 arg ops
 void jmp(struct Cpu *, uint16_t, uint16_t);
 void jeq(struct Cpu *, uint16_t, uint16_t);
 void jne(struct Cpu *, uint16_t, uint16_t);
@@ -80,9 +83,9 @@ void psh(struct Cpu *, uint16_t, uint16_t);
 void pop(struct Cpu *, uint16_t, uint16_t);
 void ptc(struct Cpu *, uint16_t, uint16_t);
 
+// 2 arg ops
 void tst(struct Cpu *, uint16_t, uint16_t);
-void str(struct Cpu *, uint16_t, uint16_t); // value of arg1 -> memory location at arg2
-void lod(struct Cpu *, uint16_t, uint16_t); // value of arg1 -> register of r2
+void mov(struct Cpu *, uint16_t, uint16_t);
 
 // math operations (2 args)
 void add(struct Cpu *, uint16_t, uint16_t);
