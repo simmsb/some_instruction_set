@@ -10,13 +10,23 @@ struct Cpu *init_cpu(int mem_size) {
   struct Cpu *cpu = malloc(sizeof(struct Cpu));
   cpu->memory = calloc(mem_size, sizeof(uint16_t));
   cpu->flags.halt = true;
+  cpu->regs[rip] = 0;
   cpu->regs[esp] = mem_size;
+  cpu->ticks = 0;
+  cpu->interrupts = NULL;
   return cpu;
 }
 
 void load_program(struct Cpu *cpu, uint16_t *program, int length) {
-  for (int i=0; i < length; i++)
+  for (int i=0; i < length; i++) {
+    #ifdef DEBUG
+      printf("Inserting data %" PRIu16 " at position %d in memory\n", program[i], i);
+    #endif
     cpu->memory[i] = program[i];
+  }
+  #ifdef DEBUG
+    printf("Memory at position 0 is %" PRIu16 "\n", cpu->memory[0]);
+  #endif
 }
 
 void run_cmd(struct Cpu *cpu) {
@@ -25,13 +35,22 @@ void run_cmd(struct Cpu *cpu) {
 }
 
 void run(struct Cpu *cpu) {
-  puts("Starting cpu");
+  #ifdef DEBUG
+    puts("Starting cpu");
+  #endif
+
   while (cpu->flags.halt) {
+    #ifdef DEBUG
+      printf("Cpu on cycle: %" PRIu64 ". \nreg state:\n", cpu->ticks);
+    #endif
     run_cmd(cpu);
     check_interrupts(cpu);
     cpu->ticks++;
   }
-  puts("Closing cpu");
+  
+  #ifdef DEBUG
+    puts("Closing cpu");
+  #endif
 }
 
 uint16_t hex_value(char val) {
@@ -68,7 +87,7 @@ int main(int argc, char **argv) {
   struct Cpu *cpu = init_cpu(DEFAULT_SIZE);
   uint16_t *program = parse_hex(argv[1]);
 
-  load_program(cpu, program, strlen(argv[1])/2);
+  load_program(cpu, program, strlen(argv[1])/4);
   free(program);
   run(cpu);
   free(cpu->memory);
@@ -125,9 +144,9 @@ void check_interrupts(struct Cpu *cpu) {
   Node *lst = cpu->interrupts;
   while (lst != NULL) {
     if (lst->irq->when < cpu->ticks) {
-      lst->irq->callback(cpu);
+      lst->irq->callback(cpu, lst->irq->data);
       Node *next = lst->next; // save next                      v
-      free_node(&cpu->interrupts, lst); // free node: | prev | lst | next | -> | prev | next |
+      deschedule(cpu, lst); // free node: | prev | lst | next | -> | prev | next |
       lst = next; // move next
     } else { // only increment here, since free will pull the next node along for us
       lst = lst->next;

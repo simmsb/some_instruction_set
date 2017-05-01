@@ -21,10 +21,20 @@ first two bits decide on length of instruction (00, 01, 10)
 
 struct PackedInstr decode(struct Cpu *cpu) {
   struct PackedInstr i;
+
+  #ifdef DEBUG
+    printf("cpu->regs[rip] = %" PRIu16 "\n", cpu->regs[rip]);
+  #endif
+  
   uint16_t instruction = cpu->memory[cpu->regs[rip]++];
 
   uint16_t opcode = instruction & 0x3FFF; // remove upper two bits
   int args = (instruction & 0xC000) >> 14;
+
+  #ifdef DEBUG
+    printf("Decoding instruction of opcode %" PRIu16 " with num args %d\n", opcode, args);
+  #endif
+
   switch (args) {
     case 0:
       i.i = noArgs(opcode);
@@ -97,6 +107,7 @@ instruction twoArgs(uint16_t opcode) {
     case 13: return fsb;
     case 14: return fmu;
     case 15: return fdv;
+    case 16: return irq;
     default: goto ERROR;
   }
 
@@ -138,17 +149,6 @@ void pop(OPERATION_I) {
   cpu_setloc(cpu, arg1, val);
 }
 
-void tst(OPERATION_I) {
-  uint16_t a = cpu_getloc(cpu, arg1);
-  uint16_t b = cpu_getloc(cpu, arg2);
-
-  cpu->flags.zero = !(a == b);
-  cpu->flags.sign = a < b;
-}
-
-void mov(OPERATION_I) {
-  cpu_setloc(cpu, arg1, cpu_getloc(cpu, arg2));
-}
 
 void jeq(OPERATION_I) {
   if (!cpu->flags.zero) cpu_setreg(cpu, rip, arg1);
@@ -168,6 +168,42 @@ void jme(OPERATION_I) {  // more than
 
 void ptc(OPERATION_I) {
   printf("%c", (char) arg1);
+}
+
+void tst(OPERATION_I) {
+  uint16_t a = cpu_getloc(cpu, arg1);
+  uint16_t b = cpu_getloc(cpu, arg2);
+
+  cpu->flags.zero = !(a == b);
+  cpu->flags.sign = a < b;
+}
+
+void mov(OPERATION_I) {
+  cpu_setloc(cpu, arg1, cpu_getloc(cpu, arg2));
+}
+
+void irq(OPERATION_I) {
+  uint16_t time_ = cpu_getloc(cpu, arg2);
+  void (*callback)(struct Cpu *, uint16_t *);
+  int args;
+  int irq_num = cpu_getloc(cpu, arg1);
+
+  switch (irq_num) {
+    case 0:
+      callback = timed_jump;
+      args = 1;
+      break;
+  }
+
+  struct Interrupt *irq = malloc(sizeof(struct Interrupt *) + (args * sizeof(uint16_t) - 1));
+  irq->when = cpu->ticks + time_;
+  irq->callback = callback;
+
+  switch (irq_num) {
+    case 0:
+      irq->data[0] = cpu->regs[aaa];
+  }
+  schedule(cpu, irq);
 }
 
 void add(OPERATION_I) {
@@ -244,4 +280,9 @@ void fmu(OPERATION_I) {
 
 void fdv(OPERATION_I) {
   cpu->fregs[acc] = cpu->fregs[cpu_getloc(cpu, arg1)] / cpu->fregs[cpu_getloc(cpu, arg2)];
+}
+
+
+void timed_jump(struct Cpu *cpu, uint16_t *data) {
+  cpu->regs[rip] = data[0];
 }

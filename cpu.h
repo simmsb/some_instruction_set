@@ -39,8 +39,9 @@ struct Cpu {
 };
 
 struct Interrupt {
-  void (*callback)(struct Cpu *);
-  uint64_t when;
+  void (*callback)(struct Cpu *, uint16_t *);
+  uint16_t when;
+  uint16_t data[1]; // length of this == number of args
 };
 
 typedef void (*instruction)(struct Cpu *, uint16_t, uint16_t);
@@ -86,6 +87,7 @@ void ptc(struct Cpu *, uint16_t, uint16_t);
 // 2 arg ops
 void tst(struct Cpu *, uint16_t, uint16_t);
 void mov(struct Cpu *, uint16_t, uint16_t);
+void irq(struct Cpu *, uint16_t, uint16_t);
 
 // math operations (2 args)
 void add(struct Cpu *, uint16_t, uint16_t);
@@ -103,6 +105,8 @@ void fsb(struct Cpu *, uint16_t, uint16_t);
 void fmu(struct Cpu *, uint16_t, uint16_t);
 void fdv(struct Cpu *, uint16_t, uint16_t);
 
+
+// IRQ stuff
 typedef struct Node {
   Node *next;
   Node *prev;
@@ -111,3 +115,8 @@ typedef struct Node {
 
 void free_node(Node **, Node *);
 void push_node(Node **, struct Interrupt *);
+
+void timed_jump(struct Cpu *, uint16_t *);
+
+void schedule(struct Cpu *, struct Interrupt *);
+void deschedule(struct Cpu *, Node *);

@@ -1,5 +1,7 @@
 # Meme tier instruction set, somewhat ARM based
 
+compile with `-D DEBUG` to enable debug printing
+
 # Operand Types
 
 * `data`      -> `bXY00000000000000`
@@ -46,6 +48,7 @@
 | fsb    | 0x800D | data      | data      | Subtract float register arg2 from float register arg1 and store in float register acc        |
 | fmu    | 0x800E | data      | data      | Multiply float register arg1 with float register arg2 and store in float register acc        |
 | fdv    | 0x800F | data      | data      | Divide float register arg1 with float register arg2 and store in float register acc          |
+| irq    | 0x8010 | data      | data      | schedule an interrupt (arg1) for jump to in arg2 clocks, read [Interrupts](https://github.com/nitros12/some_instruction_set#interrupt) for info.           |
 
 
 # Registers
@@ -71,6 +74,12 @@ Example for accessing register `ggg`:
 To write `*bbb` to a register `aaa`  
 aaa  -> `b0100000000000000` -> `0x4000`  
 \*bbb -> `b1100000000000001` -> `0xC001`  
-mov -> `0x8001`  
+mov -> `0x8001`
 
 final instruction -> `0x80014000C001`
+
+# Interrupts
+
+| Name       | Number | Description                                             |
+|------------|--------|---------------------------------------------------------|
+| timed_jump | 0      | Jump to location held in register `aaa` in  arg2 cycles |
