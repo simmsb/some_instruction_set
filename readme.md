@@ -48,7 +48,7 @@ compile with `-D DEBUG` to enable debug printing
 | fsb    | 0x800D | data      | data      | Subtract float register arg2 from float register arg1 and store in float register acc        |
 | fmu    | 0x800E | data      | data      | Multiply float register arg1 with float register arg2 and store in float register acc        |
 | fdv    | 0x800F | data      | data      | Divide float register arg1 with float register arg2 and store in float register acc          |
-| irq    | 0x8010 | data      | data      | schedule an interrupt (arg1) for jump to in arg2 clocks, read [Interrupts](https://github.com/nitros12/some_instruction_set#interrupt) for info.           |
+| irq    | 0x8010 | data      | data      | schedule an interrupt (arg1) for jump to in arg2 clocks, read [Interrupts](https://github.com/nitros12/some_instruction_set#interrupts) for info.          |
 
 
 # Registers
