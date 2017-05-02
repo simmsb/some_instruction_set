@@ -17,7 +17,7 @@ struct Cpu *init_cpu(int mem_size) {
   return cpu;
 }
 
-void load_program(struct Cpu *cpu, uint16_t *program, int length) {
+void load_program(struct Cpu *cpu, uint16_t *restrict program, int length) {
   for (int i=0; i < length; i++) {
     #ifdef DEBUG
       printf("Inserting data %" PRIu16 " at position %d in memory\n", program[i], i);
@@ -47,7 +47,7 @@ void run(struct Cpu *cpu) {
     check_interrupts(cpu);
     cpu->ticks++;
   }
-  
+
   #ifdef DEBUG
     puts("Closing cpu");
   #endif

@@ -182,7 +182,7 @@ void mov(OPERATION_I) {
   cpu_setloc(cpu, arg1, cpu_getloc(cpu, arg2));
 }
 
-void irq(OPERATION_I) {
+void irq(OPERATION_I) { // TODO: Think of a better way for this
   uint16_t time_ = cpu_getloc(cpu, arg2);
   void (*callback)(struct Cpu *, uint16_t *);
   int args;
@@ -281,7 +281,6 @@ void fmu(OPERATION_I) {
 void fdv(OPERATION_I) {
   cpu->fregs[acc] = cpu->fregs[cpu_getloc(cpu, arg1)] / cpu->fregs[cpu_getloc(cpu, arg2)];
 }
-
 
 void timed_jump(struct Cpu *cpu, uint16_t *data) {
   cpu->regs[rip] = data[0];
