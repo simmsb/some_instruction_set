@@ -25,7 +25,7 @@ struct PackedInstr decode(struct Cpu *cpu) {
   #ifdef DEBUG
     printf("cpu->regs[rip] = %" PRIu16 "\n", cpu->regs[rip]);
   #endif
-  
+
   uint16_t instruction = cpu->memory[cpu->regs[rip]++];
 
   uint16_t opcode = instruction & 0x3FFF; // remove upper two bits
@@ -41,12 +41,12 @@ struct PackedInstr decode(struct Cpu *cpu) {
       break;
     case 1:
       i.i = oneArg(opcode);
-      i.arg1 = *(cpu->memory + cpu->regs[rip]++);
+      i.arg1 = cpu->memory[cpu->regs[rip]++];
       break;
     case 2:
       i.i = twoArgs(opcode);
-      i.arg1 = *(cpu->memory + cpu->regs[rip]++);
-      i.arg2 = *(cpu->memory + cpu->regs[rip]++);
+      i.arg1 = cpu->memory[cpu->regs[rip]++];
+      i.arg2 = cpu->memory[cpu->regs[rip]++];
     default:
       goto ERROR;
   }

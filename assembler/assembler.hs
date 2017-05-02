@@ -1,45 +1,65 @@
-data Instruction = OneArg OInstr
-                 | TwoArg TInstr
-                 | ThrArg FInstr deriving (Show)
+import           Numeric (showHex)
+
+data Location = Reg Bool Integer
+              | Mem Bool Integer deriving (Show)
 
 data OInstr = Nop
             | Ret
             | Call
-            | Halt
+            | Halt deriving (Show, Enum)
 
-data TInstr = Jmp Int
-            | Psh Int
-            | Pop Int
-            | Jeq Int
-            | Jne Int
-            | Jle Int
-            | Jme Int
-            | Ptc Int
+data TInstr = Jmp
+            | Psh
+            | Pop
+            | Jeq
+            | Jne
+            | Jle
+            | Jme
+            | Ptc deriving (Show, Enum)
 
-data FInstr = Tst Int Int
-            | Mov Int Int
-            | Add Int Int
-            | Sub Int Int
-            | Mul Int Int
-            | Div Int Int
-            | Rem Int Int
-            | Flc Int Int
-            | Clf Int Int
-            | Stf Int Int
-            | Ldf Int Int
-            | Mvf Int Int
-            | Fad Int Int
-            | Fsb Int Int
-            | Fmu Int Int
-            | Fdv Int Int deriving (Show)
+data FInstr = Tst
+            | Mov
+            | Add
+            | Sub
+            | Mul
+            | Div
+            | Rem
+            | Flc
+            | Clf
+            | Stf
+            | Ldf
+            | Mvf
+            | Fad
+            | Fsb
+            | Fmu
+            | Fdv
+            | Irq deriving (Show, Enum)
+
+data Instruction = One OInstr | Two TInstr Location | Three FInstr Location Location deriving (Show)
 
 type Stream = [Instruction]
 
-compile :: Instruction -> Integer
-compile OneArg instr = case instr of
-  Nop  -> 0x0000
-  Ret  -> 0x0001
-  Call -> 0x0002
-  Halt -> 0x0003
-compile TwoArg (instr arg) = case instr of
-  Jmp -- TODO 
+boolToInt :: Bool -> Integer
+boolToInt True  = 1
+boolToInt False = 0
+
+pack :: Location -> String
+pack (Reg deref value) = zfill 4 (showHex num "")
+  where num = value + (boolToInt deref * 2^15) + (2^14)
+pack (Mem deref value) = zfill 4 (showHex num "")
+  where num = value + (boolToInt deref * 2^15)
+
+zfill :: Int -> String -> String
+zfill n s = replicate (n - length s) '0' ++ s
+
+getHex :: Enum a => a -> String
+getHex s = zfill 3 $ showHex (fromEnum s) ""
+
+compile :: Instruction -> String
+compile (One instr)             = '0' : getHex instr
+compile (Two instr arg)         = '4' : getHex instr ++ pack arg
+compile (Three instr arg1 arg2) = '8' : getHex instr ++ pack arg1 ++ pack arg2
+
+
+assemble :: Stream -> String
+assemble = concatMap compile
