@@ -1,3 +1,5 @@
+module Assemble () where
+
 import           Numeric (showHex)
 
 data Location = Reg Bool Integer
