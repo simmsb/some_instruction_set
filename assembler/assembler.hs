@@ -1,4 +1,11 @@
-module Assemble () where
+{-# LANGUAGE OverloadedStrings #-}
+module Assembler (Location
+                 ,OInstr
+                 ,TInstr
+                 ,FInstr
+                 ,Instruction
+                 ,Stream
+                 ,compile) where
 
 import           Numeric (showHex)
 
@@ -8,7 +15,7 @@ data Location = Reg Bool Integer
 data OInstr = Nop
             | Ret
             | Call
-            | Halt deriving (Show, Enum)
+            | Halt deriving (Show, Eq, Enum, Bounded, Read)
 
 data TInstr = Jmp
             | Psh
@@ -17,7 +24,7 @@ data TInstr = Jmp
             | Jne
             | Jle
             | Jme
-            | Ptc deriving (Show, Enum)
+            | Ptc deriving (Show, Eq, Enum, Bounded, Read)
 
 data FInstr = Tst
             | Mov
@@ -35,7 +42,7 @@ data FInstr = Tst
             | Fsb
             | Fmu
             | Fdv
-            | Irq deriving (Show, Enum)
+            | Irq deriving (Show, Eq, Enum, Bounded, Read)
 
 data Instruction = One OInstr | Two TInstr Location | Three FInstr Location Location deriving (Show)
 
@@ -45,10 +52,10 @@ boolToInt :: Bool -> Integer
 boolToInt True  = 1
 boolToInt False = 0
 
-pack :: Location -> String
-pack (Reg deref value) = zfill 4 (showHex num "")
+packLoc :: Location -> String
+packLoc (Reg deref value) = zfill 4 (showHex num "")
   where num = value + (boolToInt deref * 2^15) + (2^14)
-pack (Mem deref value) = zfill 4 (showHex num "")
+packLoc (Mem deref value) = zfill 4 (showHex num "")
   where num = value + (boolToInt deref * 2^15)
 
 zfill :: Int -> String -> String
@@ -59,8 +66,8 @@ getHex s = zfill 3 $ showHex (fromEnum s) ""
 
 compile :: Instruction -> String
 compile (One instr)             = '0' : getHex instr
-compile (Two instr arg)         = '4' : getHex instr ++ pack arg
-compile (Three instr arg1 arg2) = '8' : getHex instr ++ pack arg1 ++ pack arg2
+compile (Two instr arg)         = '4' : getHex instr ++ packLoc arg
+compile (Three instr arg1 arg2) = '8' : getHex instr ++ packLoc arg1 ++ packLoc arg2
 
 
 assemble :: Stream -> String
