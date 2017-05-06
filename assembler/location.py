@@ -1,11 +1,10 @@
 """Assembler for the Instruction set."""
 
+import enum
 import operator
 from functools import reduce
 
 import pyparsing as pp
-
-import enum
 
 
 class Register(enum.Enum):
@@ -93,7 +92,7 @@ def consume_math(*math):
     yield from bin_op(*math)
 
 
-class Parsing:
+class Location:
     register = match_enum(Register, prefix='%')
     integer = pp.Word(pp.nums).setParseAction(lambda t: int(t[0]))
 
