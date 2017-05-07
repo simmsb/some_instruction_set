@@ -1,8 +1,7 @@
-"""Parser for asm"""
-import enum
-
+"""Parser for asm."""
 import pyparsing as pp
 
+import enum
 from location import Location, match_enum
 
 
@@ -44,6 +43,34 @@ class ops2(enum.Enum):
     irq = 0x8010
 
 
+class WrappedExpr:
+
+    def __init__(self, terms):
+        self.terms = terms
+
+
+class Label:
+
+    def __init__(self, name):
+        self.name = name[1:]
+
+
+class Instruction:
+
+    def __init__(self, instr, *args):
+        self.instr = instr
+        self.args = args
+
+
+wrappedExpr = Location.loc.copy().setParseAction(lambda t: WrappedExpr(t))
+
+
 instr0 = match_enum(ops0)
-instr0 = match_enum(ops1) + Location.expr
-instr0 = match_enum(ops2) + Location.expr + Location.expr
+instr1 = match_enum(ops1) + wrappedExpr
+instr2 = match_enum(ops2) + wrappedExpr + wrappedExpr
+
+label = pp.Word(":", bodyChars=pp.alphas).setParseAction(lambda t: Label(t[0]))
+
+line = instr0 | instr1 | instr2 | label
+line.setParseAction(lambda t: Instruction(*t))
+code = pp.OneOrMore(line + pp.LineEnd().suppress())
