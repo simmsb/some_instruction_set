@@ -4,6 +4,11 @@
 #include <string.h>
 #include <math.h>
 
+#ifdef DEBUG_TIME
+  #include <time.h>
+  #include <sys/time.h>
+#endif
+
 #define DEFAULT_SIZE 1<<16 // 2^16 bytes of ram
 
 struct Cpu *init_cpu(int mem_size) {
@@ -17,6 +22,7 @@ struct Cpu *init_cpu(int mem_size) {
   return cpu;
 }
 
+
 void load_program(struct Cpu *cpu, uint16_t *restrict program, int length) {
   for (int i=0; i < length; i++) {
     #ifdef DEBUG
@@ -29,14 +35,21 @@ void load_program(struct Cpu *cpu, uint16_t *restrict program, int length) {
   #endif
 }
 
+
 void run_cmd(struct Cpu *cpu) {
   struct PackedInstr instr = decode(cpu);
   instr.i(cpu, instr.arg1, instr.arg2);
 }
 
+
 void run(struct Cpu *cpu) {
   #ifdef DEBUG
     puts("Starting cpu");
+  #endif
+
+  #ifdef DEBUG_TIME
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
   #endif
 
   while (cpu->flags.halt) {
@@ -48,10 +61,17 @@ void run(struct Cpu *cpu) {
     cpu->ticks++;
   }
 
+  #ifdef DEBUG_TIME
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    double total = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+    printf("CPU shutting down, completed %" PRIu64 " cycles in %f ns\n", cpu->ticks, total);
+  #endif
+
   #ifdef DEBUG
     puts("Closing cpu");
   #endif
 }
+
 
 uint16_t hex_value(char val) {
   switch (val) {
@@ -66,6 +86,7 @@ uint16_t hex_value(char val) {
   }
 }
 
+
 uint16_t *parse_hex(char *hex) {
   puts(hex);
   int length = strlen(hex);
@@ -78,26 +99,11 @@ uint16_t *parse_hex(char *hex) {
   return prog;
 }
 
-int main(int argc, char **argv) {
-  if (argc != 2) {
-    printf("One argument expected. USAGE: %s <program>\n", argv[0]);
-    return EXIT_FAILURE;
-  }
-
-  struct Cpu *cpu = init_cpu(DEFAULT_SIZE);
-  uint16_t *program = parse_hex(argv[1]);
-
-  load_program(cpu, program, strlen(argv[1])/4);
-  free(program);
-  run(cpu);
-  free(cpu->memory);
-  free(cpu);
-  return 0;
-}
 
 void cpu_setreg(struct Cpu *cpu, uint16_t reg, uint16_t value) {
   cpu->regs[reg] = value;
 }
+
 
 uint16_t cpu_getloc(struct Cpu *cpu, uint16_t location) {
   uint16_t num;
@@ -113,18 +119,21 @@ uint16_t cpu_getloc(struct Cpu *cpu, uint16_t location) {
   return (location & 0x8000)?*(cpu->memory + num):num;
 }
 
+
 void cpu_setloc(struct Cpu *cpu, uint16_t location, uint16_t data) {
-  if (location & 0x8000) *(cpu->memory + cpu_getloc(cpu, location & 0x3FFF)) = data;
+  if (location & 0x8000) cpu->memory[cpu_getloc(cpu, location & 0x3FFF)] = data;
   else {
     if (location & 0x4000)
       cpu_setreg(cpu, location & 0x1FFF, data);
-    else *(cpu->memory + (location & 0x1FFF)) = data;
+    else cpu->memory[location & 0x1FFF] = data;
   }
 }
+
 
 inline uint16_t cpu_popstack(struct Cpu *cpu) {
   return cpu->memory[cpu->regs[esp]++]; // get value, move up
 }
+
 
 inline void cpu_pushstack(struct Cpu *cpu, uint16_t val) {
   cpu->memory[--cpu->regs[esp]] = val; // move down, set value
@@ -136,9 +145,11 @@ void schedule(struct Cpu *cpu, struct Interrupt *i) {
   push_node(&cpu->interrupts, i);
 }
 
+
 void deschedule(struct Cpu *cpu, Node *node) { // might want to do more stuff sometime
   free_node(&cpu->interrupts, node);
 }
+
 
 void check_interrupts(struct Cpu *cpu) {
   Node *lst = cpu->interrupts;
@@ -169,6 +180,7 @@ void free_node(Node **head, Node *node) {
   free(node);
 }
 
+
 void push_node(Node **head, struct Interrupt *irq) {
   Node *ptr = malloc(sizeof(Node));
   ptr->next = *head;
@@ -176,4 +188,22 @@ void push_node(Node **head, struct Interrupt *irq) {
   if (*head != NULL)
     (*head)->prev = ptr;
   *head = ptr;
+}
+
+
+int main(int argc, char **argv) {
+  if (argc != 2) {
+    printf("One argument expected. USAGE: %s <program>\n", argv[0]);
+    return EXIT_FAILURE;
+  }
+
+  struct Cpu *cpu = init_cpu(DEFAULT_SIZE);
+  uint16_t *program = parse_hex(argv[1]);
+
+  load_program(cpu, program, strlen(argv[1])/4);
+  free(program);
+  run(cpu);
+  free(cpu->memory);
+  free(cpu);
+  return 0;
 }

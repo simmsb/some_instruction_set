@@ -1,38 +1,35 @@
 """Assembler for the Instruction set."""
 
-import operator
-from functools import reduce
-
 import pyparsing as pp
 
-import enum
+from instructions import Compilable, Register, pack_address, wrap_hexpad
 
 
-class Register(enum.Enum):
-    aaa = 0
-    bbb = 1
-    ccc = 2
-    ddd = 3
-    eee = 4
-    fff = 5
-    ggg = 6
-    esp = 7
-    epb = 8
-    rip = 9
-    acc = 10
+class Reference(Compilable):
 
+    def __init__(self, t, *, is_deref=False):
+        """Compile a reference into it's correct form."""
+        self.t = t
+        self.is_deref = is_deref
 
-class Dereference:
+    @wrap_hexpad
+    def compile(self, context):
+        if isinstance(self.t, Register):
+            return pack_address(self.t.value, is_reg=True, is_deref=self.is_deref)
 
-    def __init__(self, value):
-        self.value = value
+        if isinstance(self.t, int):
+            return pack_address(self.t, is_deref=self.is_deref)
+
+        if isinstance(self.t, str):
+            if self.t in context.labels:
+                return pack_address(context.labels[self.t])
+
+        raise Exception(f"Cannnot compile {self.t} object of type {type(self.t)} into a raw memory location or unresolved label")
 
     def __str__(self):
-        """No."""
-        return f"[{self.value}]"
-
-    def expand(self):
-        yield from consume_math(*self.value)
+        if self.is_deref:
+            return f"[{self.t}]"
+        return str(self.t)
 
 
 def match_enum(enum_, *, prefix=None):
@@ -42,67 +39,26 @@ def match_enum(enum_, *, prefix=None):
             return pp.Combine(pp.Literal(prefix).suppress() + pp.Literal(tok))
         return pp.Literal(tok)
 
-    match = reduce(operator.or_, (get_tok(i.name) for i in enum_))  # type: pp.MatchFirst
+    match = pp.MatchFirst(get_tok(i.name) for i in enum_)  # type: pp.MatchFirst
     catch = match.setParseAction(lambda t: enum_[t[0]])
     return catch
 
 
-class Operation:
-
-    def __init__(self, name):
-        self.name = name
-
-    def __str__(self):
-        return f"{self.__class__.__name__}: {self.name}"
-
-
-class Push(Operation):
-    pass
-
-
-class Op(Operation):
-    pass
-
-
-class Deref:
-    pass
-
-
-def consume_math(*math):
-    """Consume some math expression."""
-    if len(math) == 1:
-        yield math[0]
-
-    def bin_op(left, op, right, *rest):
-        def expansion(val):
-            if isinstance(val, (Register, int)):
-                yield Push(val)
-            elif isinstance(val, Dereference):
-                yield from val.expand()
-                yield Deref()
-            elif isinstance(val, (list, pp.ParseResults)):
-                yield from consume_math(*val)
-
-        yield from expansion(left)
-        yield from expansion(right)
-        yield Op(op)
-
-        if rest:
-            yield from bin_op(None, *rest)
-
-    yield from bin_op(*math)
-
-
 class Location:
     register = match_enum(Register, prefix='%')
-    justRegister = match_enum(Register)
     integer = pp.Word(pp.nums).setParseAction(lambda t: int(t[0]))
 
-    expr = pp.Forward()
+    deref = pp.nestedExpr(opener='[', closer=']', content=register | integer)
+    deref.setParseAction(lambda t: Reference(t[0][0], is_deref=True))
 
-    combinator = register | integer | pp.nestedExpr(content=expr) | \
-        pp.nestedExpr(opener="[", closer="]", content=expr).setParseAction(lambda t: Dereference(t[0]))
+    nonref = register | integer
+    nonref.setParseAction(lambda t: Reference(t[0]))
 
-    expr <<= combinator + pp.ZeroOrMore(pp.oneOf("+ -") + combinator)
+    label_ref = pp.Word(pp.alphanums)
+    label_ref.setParseAction(lambda t: Reference(t[0]))
 
-    loc = justRegister | expr
+    quote = pp.Suppress("'")
+    char_lit = pp.Combine(quote + pp.Word(pp.alphanums, max=1) + quote)
+    char_lit.setParseAction(lambda t: Reference(ord(t[0])))
+
+    expr = deref | nonref | label_ref | char_lit

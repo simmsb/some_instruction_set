@@ -47,6 +47,7 @@ struct PackedInstr decode(struct Cpu *cpu) {
       i.i = twoArgs(opcode);
       i.arg1 = cpu->memory[cpu->regs[rip]++];
       i.arg2 = cpu->memory[cpu->regs[rip]++];
+      break;
     default:
       goto ERROR;
   }
@@ -54,6 +55,7 @@ struct PackedInstr decode(struct Cpu *cpu) {
   return i;
 
   ERROR:
+    printf("[ERROR] failed to decode instruction, [RIP] = %" PRIu16 " instruction = %" PRIu16 " n args = %d\n", cpu->regs[rip], opcode, args);
     exit(1);
 }
 

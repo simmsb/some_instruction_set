@@ -1,52 +1,21 @@
 """Parser for asm."""
 import pyparsing as pp
 
-import enum
+from instructions import Compilable, Instruction, ops0, ops1, ops2
 from location import Location, match_enum
 
-
-class ops0(enum.Enum):
-    nop = 0x0
-    ret = 0x1
-    call = 0x2
-    halt = 0x3
-
-
-class ops1(enum.Enum):
-    jmp = 0x4000
-    psh = 0x4001
-    pop = 0x4003
-    jeq = 0x4004
-    jne = 0x4005
-    jle = 0x4006
-    jme = 0x4007
-    ptc = 0x4008
-
-
-class ops2(enum.Enum):
-    tst = 0x8000
-    mov = 0x8001
-    add = 0x8002
-    sub = 0x8003
-    mul = 0x8004
-    div = 0x8005
-    rem = 0x8006
-    flc = 0x8007
-    clf = 0x8008
-    stf = 0x8009
-    ldf = 0x800A
-    mvf = 0x800B
-    fad = 0x800C
-    fsb = 0x800D
-    fmu = 0x800E
-    fdv = 0x800F
-    irq = 0x8010
+DEBUG = True
 
 
 class WrappedExpr:
 
     def __init__(self, terms):
-        self.terms = terms
+        if len(terms) > 1:
+            raise Exception("Argument somehow has multiple parts")
+        self.term = terms.expression
+
+    def __str__(self):
+        return str(self.term)
 
 
 class Label:
@@ -55,22 +24,55 @@ class Label:
         self.name = name[1:]
 
 
-class Instruction:
+class AssemberContext(Compilable):
 
-    def __init__(self, instr, *args):
-        self.instr = instr
-        self.args = args
+    def __init__(self, data):
+        self.data = data
+        self.labels = {}
 
+        self.resolve_labels()
 
-wrappedExpr = Location.loc.copy().setParseAction(lambda t: WrappedExpr(t))
+    def resolve_labels(self):
+        label_count = 0
+        for c, i in enumerate(self.data):
+            if isinstance(i, Label):
+                self.labels[i.name] = c + label_count
+                label_count += 1
+
+        self.data = [i for i in self.data if isinstance(i, Instruction)]
+        if DEBUG:
+            print("\n".join(str(i) for i in self.data))
+
+    def compile(self):
+        return "".join(i.compile(self) for i in self.data)
 
 
 instr0 = match_enum(ops0)
-instr1 = match_enum(ops1) + wrappedExpr
-instr2 = match_enum(ops2) + wrappedExpr + wrappedExpr
+instr1 = match_enum(ops1) + Location.expr
+instr2 = match_enum(ops2) + Location.expr + Location.expr
 
 label = pp.Word(":", bodyChars=pp.alphas).setParseAction(lambda t: Label(t[0]))
 
-line = instr0 | instr1 | instr2 | label
-line.setParseAction(lambda t: Instruction(*t))
-code = pp.OneOrMore(line + pp.LineEnd().suppress())
+code_line = instr0 | instr1 | instr2
+code_line.setParseAction(lambda t: Instruction(*t))
+line = code_line | label
+code = pp.delimitedList(line, delim=";")
+
+
+def assemble(string: str):
+    """Assemble some ASM into machine instructions."""
+    data = code.parseString(string)
+
+    context = AssemberContext(data)
+
+    return context.compile()
+
+
+if __name__ == '__main__':
+    import sys
+    for i in sys.argv[1:]:
+        print(f"\nCompiling {i}:\n")
+        with open(i) as f:
+            program = f.read()
+            assembled = assemble(program)
+            print(assembled)
