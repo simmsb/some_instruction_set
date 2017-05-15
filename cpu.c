@@ -101,6 +101,9 @@ uint16_t *parse_hex(char *hex) {
 
 
 void cpu_setreg(struct Cpu *cpu, uint16_t reg, uint16_t value) {
+  #if DEBUG_MOV
+    printf("Setting register %" PRIu16 " to %" PRIu16 "\n", reg, value);
+  #endif
   cpu->regs[reg] = value;
 }
 
@@ -111,16 +114,22 @@ uint16_t cpu_getloc(struct Cpu *cpu, uint16_t location) {
   // If X is set, Dereference
   // If Y is set, get value of register
   if (location & 0x4000) { // if register
-    int regnum = ((location & 0x3C00) >> 10) & 0xF;
+    int regnum = location & 0xFF; // extract lower bits
     num = cpu->regs[regnum];
+    #if DEBUG_MOV
+      printf("Getting value %" PRIu16 "from register %d\n", num, regnum);
+    #endif
   } else { // abs
     num = location & 0x3FFF;
   }
-  return (location & 0x8000)?*(cpu->memory + num):num;
+  return (location & 0x8000)?cpu->memory[num]:num;
 }
 
 
 void cpu_setloc(struct Cpu *cpu, uint16_t location, uint16_t data) {
+  #if DEBUG_MOV
+    printf("Setting location %"PRIu16" to %"PRIu16"\n", location, data);
+  #endif
   if (location & 0x8000) cpu->memory[cpu_getloc(cpu, location & 0x3FFF)] = data;
   else {
     if (location & 0x4000)

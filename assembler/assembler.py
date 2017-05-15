@@ -32,6 +32,9 @@ class AssemberContext(Compilable):
 
         self.resolve_labels()
 
+    def get_size_before(self, position):
+        return sum(map(len, self.data[:position]))
+
     def resolve_labels(self):
         label_count = 0
         for c, i in enumerate(self.data):
@@ -40,6 +43,8 @@ class AssemberContext(Compilable):
                 label_count += 1
 
         self.data = [i for i in self.data if isinstance(i, Instruction)]
+        self.labels = {k: self.get_size_before(v) for k, v in self.labels.items()}
+
         if DEBUG:
             print("\n".join(str(i) for i in self.data))
 

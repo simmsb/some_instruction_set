@@ -1,5 +1,7 @@
 """Assembler for the Instruction set."""
 
+import ast
+
 import pyparsing as pp
 
 from instructions import Compilable, Register, pack_address, wrap_hexpad
@@ -57,8 +59,9 @@ class Location:
     label_ref = pp.Word(pp.alphanums)
     label_ref.setParseAction(lambda t: Reference(t[0]))
 
-    quote = pp.Suppress("'")
-    char_lit = pp.Combine(quote + pp.Word(pp.alphanums, max=1) + quote)
-    char_lit.setParseAction(lambda t: Reference(ord(t[0])))
+    quote = "\'"
+    char_lit_escapes = pp.Word(r"\n\r\t", max=2) | pp.Word(pp.alphanums, max=1)
+    char_lit = pp.Combine(quote + char_lit_escapes + quote)
+    char_lit.setParseAction(lambda t: Reference(ord(ast.literal_eval(t[0]))))
 
     expr = deref | nonref | label_ref | char_lit

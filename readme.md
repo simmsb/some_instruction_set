@@ -2,6 +2,8 @@
 
 compile with `-D DEBUG` to enable debug printing
 compile with `-D DEBUG_TIME` to enable time and cycle count logging
+compile with `-D DEBUG_TST` to enable test instruction debugging
+compile with `-D DEBUG_MOV` to enable mov instruction debugging
 
 # Operand Types
 

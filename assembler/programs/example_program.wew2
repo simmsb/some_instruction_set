@@ -1,8 +1,10 @@
+mov %aaa 26;
 :start;
-mov %aaa 25;
-sub 122 %aaa;
+sub 123 %aaa;
 ptc %acc;
 sub %aaa 1;
 mov %aaa %acc;
 tst %aaa 0;
-jme start;
+jeq start;
+ptc '\n';
+halt;

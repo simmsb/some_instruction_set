@@ -90,6 +90,9 @@ class Instruction:
         args = " ".join(map(str, self.args))
         return f"{self.instr.name} {args}".strip()
 
+    def __len__(self):
+        return len(self.args) + 1
+
     def compile(self, context):
         comp = hexpad(self.instr) + "".join(i.compile(context) for i in self.args)
         print(f"compiling: {self} -> {comp}")

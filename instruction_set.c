@@ -153,19 +153,19 @@ void pop(OPERATION_I) {
 
 
 void jeq(OPERATION_I) {
-  if (!cpu->flags.zero) cpu_setreg(cpu, rip, arg1);
+  if (!cpu->flags.zero) cpu_setreg(cpu, rip, cpu_getloc(cpu, arg1));
 }
 
 void jne(OPERATION_I) {
-  if (cpu->flags.zero) cpu_setreg(cpu, rip, arg1);
+  if (cpu->flags.zero) cpu_setreg(cpu, rip, cpu_getloc(cpu, arg1));
 }
 
 void jle(OPERATION_I) {  // less than
-  if (cpu->flags.sign) cpu_setreg(cpu, rip, arg1);
+  if (cpu->flags.sign) cpu_setreg(cpu, rip, cpu_getloc(cpu, arg1));
 }
 
 void jme(OPERATION_I) {  // more than
-  if (!cpu->flags.sign) cpu_setreg(cpu, rip, arg1);
+  if (!cpu->flags.sign) cpu_setreg(cpu, rip, cpu_getloc(cpu, arg1));
 }
 
 void ptc(OPERATION_I) {
@@ -175,9 +175,15 @@ void ptc(OPERATION_I) {
 void tst(OPERATION_I) {
   uint16_t a = cpu_getloc(cpu, arg1);
   uint16_t b = cpu_getloc(cpu, arg2);
+  #if DEBUG_TST
+    printf("a = %" PRIu16 ", b = %" PRIu16 "\n", a, b);
+  #endif
 
-  cpu->flags.zero = !(a == b);
+  cpu->flags.zero = a == b;
   cpu->flags.sign = a < b;
+  #if DEBUG_TST
+    printf("zero flag is: %d\nsign flag is %d\n", cpu->flags.zero, cpu->flags.sign);
+  #endif
 }
 
 void mov(OPERATION_I) {
