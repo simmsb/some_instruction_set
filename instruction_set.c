@@ -169,7 +169,7 @@ void jme(OPERATION_I) {  // more than
 }
 
 void ptc(OPERATION_I) {
-  printf("%c", (char) arg1);
+  printf("%c", (char) cpu_getloc(cpu, arg1));
 }
 
 void tst(OPERATION_I) {
@@ -209,20 +209,20 @@ void irq(OPERATION_I) { // TODO: Think of a better way for this
 }
 
 void add(OPERATION_I) {
-  cpu_setreg(cpu, acc, arg1 + arg2);
+  cpu_setreg(cpu, acc, cpu_getloc(cpu, arg1) + cpu_getloc(cpu, arg2));
 }
 void sub(OPERATION_I) {
-  cpu_setreg(cpu, acc, arg1 - arg2);
+  cpu_setreg(cpu, acc, cpu_getloc(cpu, arg1) - cpu_getloc(cpu, arg2));
 }
 void mul(OPERATION_I) {
-  cpu_setreg(cpu, acc, arg1 * arg2);
+  cpu_setreg(cpu, acc, cpu_getloc(cpu, arg1) * cpu_getloc(cpu, arg2));
 }
 
 void divn(OPERATION_I) {
-  cpu_setreg(cpu, acc, arg1 / arg2);
+  cpu_setreg(cpu, acc, cpu_getloc(cpu, arg1) / cpu_getloc(cpu, arg2));
 }
 void rem(OPERATION_I) {
-  cpu_setreg(cpu, acc, arg1 % arg2);
+  cpu_setreg(cpu, acc, cpu_getloc(cpu, arg1) % cpu_getloc(cpu, arg2));
 }
 
 void flc(OPERATION_I) { // convert arg1 and arg2 into float and store in float reg aaa

@@ -54,7 +54,6 @@ instruction twoArgs(uint16_t);
 
 struct PackedInstr {
   instruction i;
-  int n;
   uint16_t arg1;
   uint16_t arg2;
 };
