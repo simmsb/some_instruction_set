@@ -19,9 +19,7 @@ first two bits decide on length of instruction (00, 01, 10)
 #include <stdlib.h>
 #include <stdio.h>
 
-struct PackedInstr decode(struct Cpu *cpu) {
-  struct PackedInstr i;
-
+void decode(struct Cpu *cpu, struct PackedInstr *i) {
   #ifdef DEBUG
     printf("cpu->regs[rip] = %" PRIu16 "\n", cpu->regs[rip]);
   #endif
@@ -37,22 +35,22 @@ struct PackedInstr decode(struct Cpu *cpu) {
 
   switch (args) {
     case 0:
-      i.i = noArgs(opcode);
+      i->i = noArgs(opcode);
       break;
     case 1:
-      i.i = oneArg(opcode);
-      i.arg1 = cpu->memory[cpu->regs[rip]++];
+      i->i = oneArg(opcode);
+      i->arg1 = cpu->memory[cpu->regs[rip]++];
       break;
     case 2:
-      i.i = twoArgs(opcode);
-      i.arg1 = cpu->memory[cpu->regs[rip]++];
-      i.arg2 = cpu->memory[cpu->regs[rip]++];
+      i->i = twoArgs(opcode);
+      i->arg1 = cpu->memory[cpu->regs[rip]++];
+      i->arg2 = cpu->memory[cpu->regs[rip]++];
       break;
     default:
       goto ERROR;
   }
 
-  return i;
+  return;
 
   ERROR:
     printf("[ERROR] failed to decode instruction, [RIP] = %" PRIu16 " instruction = %" PRIu16 " n args = %d\n", cpu->regs[rip], opcode, args);

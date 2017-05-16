@@ -58,7 +58,7 @@ struct PackedInstr {
   uint16_t arg2;
 };
 
-struct PackedInstr decode(struct Cpu *);
+void decode(struct Cpu *, struct PackedInstr *);
 
 uint16_t cpu_getloc(struct Cpu *, uint16_t);
 uint16_t cpu_popstack(struct Cpu *);

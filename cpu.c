@@ -9,6 +9,7 @@
   #include <sys/time.h>
 #endif
 
+#define NANO_SECOND pow(10, 9)
 #define DEFAULT_SIZE 1<<16 // 2^16 bytes of ram
 
 struct Cpu *init_cpu(int mem_size) {
@@ -36,12 +37,6 @@ void load_program(struct Cpu *cpu, uint16_t *restrict program, int length) {
 }
 
 
-void run_cmd(struct Cpu *cpu) {
-  struct PackedInstr instr = decode(cpu);
-  instr.i(cpu, instr.arg1, instr.arg2);
-}
-
-
 void run(struct Cpu *cpu) {
   #ifdef DEBUG
     puts("Starting cpu");
@@ -52,19 +47,24 @@ void run(struct Cpu *cpu) {
     clock_gettime(CLOCK_MONOTONIC, &start);
   #endif
 
+  struct PackedInstr instr;
+
   while (cpu->flags.halt) {
     #ifdef DEBUG
       printf("Cpu on cycle: %" PRIu64 ". \nreg state:\n", cpu->ticks);
     #endif
-    run_cmd(cpu);
+
+    decode(cpu, &instr);
+    instr.i(cpu, instr.arg1, instr.arg2);
     check_interrupts(cpu);
     cpu->ticks++;
   }
 
   #ifdef DEBUG_TIME
     clock_gettime(CLOCK_MONOTONIC, &end);
-    double total = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-    printf("CPU shutting down, completed %" PRIu64 " cycles in %f ns\n", cpu->ticks, total);
+    printf("CPU shutting down, completed %" PRIu64 " cycles in %f s\n",
+           cpu->ticks, (end.tv_sec - start.tv_sec) +
+           (end.tv_nsec - start.tv_nsec) / NANO_SECOND);
   #endif
 
   #ifdef DEBUG
