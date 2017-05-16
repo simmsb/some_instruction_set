@@ -24,19 +24,6 @@ struct Cpu *init_cpu(int mem_size) {
 }
 
 
-void load_program(struct Cpu *cpu, uint16_t *restrict program, int length) {
-  for (int i=0; i < length; i++) {
-    #ifdef DEBUG
-      printf("Inserting data %" PRIu16 " at position %d in memory\n", program[i], i);
-    #endif
-    cpu->memory[i] = program[i];
-  }
-  #ifdef DEBUG
-    printf("Memory at position 0 is %" PRIu16 "\n", cpu->memory[0]);
-  #endif
-}
-
-
 void run(struct Cpu *cpu) {
   #ifdef DEBUG
     puts("Starting cpu");
@@ -209,7 +196,7 @@ int main(int argc, char **argv) {
   struct Cpu *cpu = init_cpu(DEFAULT_SIZE);
   uint16_t *program = parse_hex(argv[1]);
 
-  load_program(cpu, program, strlen(argv[1])/4);
+  memcpy(cpu->memory, program, sizeof(uint16_t)*strlen(argv[1])/4);
   free(program);
   run(cpu);
   free(cpu->memory);

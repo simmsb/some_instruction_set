@@ -151,11 +151,11 @@ void pop(OPERATION_I) {
 
 
 void jeq(OPERATION_I) {
-  if (!cpu->flags.zero) cpu_setreg(cpu, rip, cpu_getloc(cpu, arg1));
+  if (cpu->flags.zero) cpu_setreg(cpu, rip, cpu_getloc(cpu, arg1));
 }
 
 void jne(OPERATION_I) {
-  if (cpu->flags.zero) cpu_setreg(cpu, rip, cpu_getloc(cpu, arg1));
+  if (!cpu->flags.zero) cpu_setreg(cpu, rip, cpu_getloc(cpu, arg1));
 }
 
 void jle(OPERATION_I) {  // less than
@@ -234,7 +234,7 @@ void flc(OPERATION_I) { // convert arg1 and arg2 into float and store in float r
   uint16_t upper = cpu_getloc(cpu, arg1);
 
   float value = (float) (upper << 16) + lower;
-  cpu->fregs[aaa ] = value;
+  cpu->fregs[aaa] = value;
 }
 
 void clf(OPERATION_I) { // convert float register aaa into two ints and store in arg1 and arg2

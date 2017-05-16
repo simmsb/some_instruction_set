@@ -1,0 +1,13 @@
+ptc 'h';
+ptc 'e';
+ptc 'l';
+ptc 'l';
+ptc 'o';
+ptc '\n';
+ptc 'w';
+ptc 'o';
+ptc 'r';
+ptc 'l';
+ptc 'd';
+ptc '\n';
+halt;
