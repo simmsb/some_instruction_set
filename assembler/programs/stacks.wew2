@@ -1,0 +1,9 @@
+psh 97;
+:loop;
+pop %aaa;
+ptc %aaa;
+add %aaa 1;
+psh %acc;
+tst %acc 122;
+jle loop;
+halt;

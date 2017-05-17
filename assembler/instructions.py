@@ -69,7 +69,7 @@ def wrap_hexpad(func):
 
 def pack_address(value, *, is_reg=False, is_deref=False):
     """Pack an address into an integer."""
-    return value | is_reg * (1 << 14) | is_deref * (1 << 15)
+    return value | is_reg << 14 | is_deref << 15
 
 
 class Compilable:
