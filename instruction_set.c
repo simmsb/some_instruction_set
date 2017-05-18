@@ -116,7 +116,7 @@ instruction twoArgs(uint16_t opcode) {
     exit(1);
 }
 
-void halt(OPERATION_I){
+void halt(OPERATION_I) {
   cpu->flags.halt = false;
 }
 
@@ -256,7 +256,7 @@ void stf(OPERATION_I) { // store upper 2 bytes of float in arg1, lower 2 bytes i
   uint16_t lower = c & 0xFFFF;
 
   cpu_setloc(cpu, arg1, upper);
-  cpu_setloc(cpu, arg1, lower);
+  cpu_setloc(cpu, arg2, lower);
 }
 
 void ldf(OPERATION_I) { // load a float from memory into float register aaa (no cast)
