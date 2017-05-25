@@ -1,6 +1,6 @@
-#include <stdint.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <stdint.h>
 #define NUM_REGS 11
 
 typedef struct Node Node;
@@ -21,12 +21,12 @@ enum Registers { // used for assember, etc
 };
 
 struct Flags {
-  bool carry:1;
-  bool parity:1;
-  bool zero:1;
-  bool sign:1;
-  bool overflow:1;
-  bool halt:1;
+  bool carry : 1;
+  bool parity : 1;
+  bool zero : 1;
+  bool sign : 1;
+  bool overflow : 1;
+  bool halt : 1;
 };
 
 struct Cpu {
@@ -48,8 +48,8 @@ typedef void (*instruction)(struct Cpu *, uint16_t, uint16_t);
 
 #define OPERATION_I struct Cpu *cpu, uint16_t arg1, uint16_t arg2
 
-instruction  noArgs(uint16_t);
-instruction  oneArg(uint16_t);
+instruction noArgs(uint16_t);
+instruction oneArg(uint16_t);
 instruction twoArgs(uint16_t);
 
 struct PackedInstr {
@@ -68,7 +68,7 @@ void cpu_setloc(struct Cpu *, uint16_t, uint16_t);
 void check_interrupts(struct Cpu *);
 
 // 0 arg ops
-void nop(struct Cpu *, uint16_t, uint16_t);  // 0x0000
+void nop(struct Cpu *, uint16_t, uint16_t); // 0x0000
 void ret(struct Cpu *, uint16_t, uint16_t);
 void call(struct Cpu *, uint16_t, uint16_t);
 void halt(struct Cpu *, uint16_t, uint16_t);
@@ -99,11 +99,11 @@ void clf(struct Cpu *, uint16_t, uint16_t);
 void stf(struct Cpu *, uint16_t, uint16_t);
 void ldf(struct Cpu *, uint16_t, uint16_t);
 void mvf(struct Cpu *, uint16_t, uint16_t); // move float between regs
-void fad(struct Cpu *, uint16_t, uint16_t); // add freg arg1, freg arg2 store in float reg acc
+void fad(struct Cpu *, uint16_t,
+         uint16_t); // add freg arg1, freg arg2 store in float reg acc
 void fsb(struct Cpu *, uint16_t, uint16_t);
 void fmu(struct Cpu *, uint16_t, uint16_t);
 void fdv(struct Cpu *, uint16_t, uint16_t);
-
 
 // IRQ stuff
 typedef struct Node {
