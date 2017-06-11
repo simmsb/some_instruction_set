@@ -96,29 +96,31 @@ uint16_t cpu_getloc(struct Cpu *cpu, uint16_t location) {
   // bXY00000000000000
   // If X is set, Dereference
   // If Y is set, get value of register
-  if (location & 0x4000) {        // if register
+  if (location & 1 << 14) {       // if register
     int regnum = location & 0xFF; // extract lower bits
     num = cpu->regs[regnum];
 #if DEBUG_MOV
-    printf("Getting value %" PRIu16 "from register %d\n", num, regnum);
+    printf("Getting value %" PRIu16 " from register %d\n", num, regnum);
 #endif
   } else { // abs
     num = location & 0x3FFF;
   }
-  return (location & 0x8000) ? cpu->memory[num] : num;
+  return (location & 1 << 15) ? cpu->memory[num] : num;
 }
 
 void cpu_setloc(struct Cpu *cpu, uint16_t location, uint16_t data) {
+  if (location & 1 << 15) {
+    int loc = cpu_getloc(cpu, location & 0x7FFF);
+    cpu->memory[loc] = data;
 #if DEBUG_MOV
-  printf("Setting location %" PRIu16 " to %" PRIu16 "\n", location, data);
+    printf("Setting location %" PRIu16 " to %" PRIu16 "\n", loc, data);
 #endif
-  if (location & 0x8000)
-    cpu->memory[cpu_getloc(cpu, location & 0x3FFF)] = data;
-  else {
-    if (location & 0x4000)
+  } else {
+    if (location & 1 << 14)
       cpu_setreg(cpu, location & 0x1FFF, data);
-    else
+    else {
       cpu->memory[location & 0x1FFF] = data;
+    }
   }
 }
 

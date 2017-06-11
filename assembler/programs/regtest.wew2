@@ -1,0 +1,8 @@
+mov %aaa 255;
+mov [%aaa] 'a';
+ptc [%aaa];
+ptc [255];
+mov [255] 'a';
+ptc [255];
+ptc 'a';
+halt;
