@@ -64,9 +64,8 @@ uint16_t hex_value(char val) {
   case '0' ... '9':
     return val - '0';
   case 'A' ... 'F':
-    return 10 + (val - 'A');
   case 'a' ... 'f':
-    return 10 + (val - 'a');
+    return 10 + ((val | ' ') - 'a');
   default:
     return 0;
   }
