@@ -142,6 +142,34 @@ instruction twoArgs(uint16_t opcode) {
     return fdv;
   case 16:
     return irq;
+  case 17:
+    return addl;
+  case 18:
+    return subl;
+  case 19:
+    return mull;
+  case 20:
+    return divl;
+  case 21:
+    return reml;
+  case 22:
+    return addq;
+  case 23:
+    return subq;
+  case 24:
+    return mulq;
+  case 25:
+    return divq;
+  case 26:
+    return remq;
+  case 27:
+    return not;
+  case 28:
+    return and;
+  case 29:
+    return or;
+  case 30:
+    return xor;
   default:
     goto ERROR;
   }
@@ -325,3 +353,65 @@ void fdv(OPERATION_I) {
 }
 
 void timed_jump(struct Cpu *cpu, uint16_t *data) { cpu->regs[rip] = data[0]; }
+
+void addl(OPERATION_I) {
+    uint32_t left = cpu->memory[cpu_getloc(cpu, arg1)];
+    uint32_t right = cpu->memory[cpu_getloc(cpu, arg2)];
+
+    uint32_t res = left+right;
+    cpu->extreg = res;
+}
+
+void subl(OPERATION_I) {
+
+}
+
+void mull(OPERATION_I) {
+
+}
+
+void divl(OPERATION_I) {
+
+}
+
+void reml(OPERATION_I) {
+
+}
+
+
+void addq(OPERATION_I) {
+
+}
+
+void subq(OPERATION_I) {
+
+}
+
+void mulq(OPERATION_I) {
+
+}
+
+void divq(OPERATION_I) {
+
+}
+
+void remq(OPERATION_I) {
+
+}
+
+
+void not(OPERATION_I) {
+}
+
+void and(OPERATION_I) {
+
+}
+
+void or(OPERATION_I) {
+
+}
+
+void xor(OPERATION_I) {
+
+}
+

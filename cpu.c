@@ -123,15 +123,20 @@ void cpu_setloc(struct Cpu *cpu, uint16_t location, uint16_t data) {
   }
 }
 
-inline uint16_t cpu_popstack(struct Cpu *cpu) {
+uint16_t cpu_popstack(struct Cpu *cpu) {
   return cpu->memory[cpu->regs[esp]++]; // get value, move up
 }
 
-inline void cpu_pushstack(struct Cpu *cpu, uint16_t val) {
+void cpu_pushstack(struct Cpu *cpu, uint16_t val) {
   cpu->memory[--cpu->regs[esp]] = val; // move down, set value
 }
 
 // print `Wew\n` -> 0x4007005740070065400700774007000A0003
+
+void copy_n_cells(struct Cpu *cpu, uint16_t from, uint16_t to, uint16_t n) {
+    memcpy(cpu->memory + to, cpu->memory + from, n*sizeof(uint16_t));
+}
+
 
 void schedule(struct Cpu *cpu, struct Interrupt *i) {
   push_node(&cpu->interrupts, i);

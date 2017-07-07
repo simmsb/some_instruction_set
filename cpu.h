@@ -36,6 +36,7 @@ struct Cpu {
   struct Flags flags;
   Node *interrupts;
   uint64_t ticks;
+  uint64_t extreg;
 };
 
 struct Interrupt {
@@ -104,6 +105,25 @@ void fad(struct Cpu *, uint16_t,
 void fsb(struct Cpu *, uint16_t, uint16_t);
 void fmu(struct Cpu *, uint16_t, uint16_t);
 void fdv(struct Cpu *, uint16_t, uint16_t);
+void addl(struct Cpu *, uint16_t, uint16_t);
+void subl(struct Cpu *, uint16_t, uint16_t);
+void mull(struct Cpu *, uint16_t, uint16_t);
+void divl(struct Cpu *, uint16_t, uint16_t);
+void reml(struct Cpu *, uint16_t, uint16_t);
+void addq(struct Cpu *, uint16_t, uint16_t);
+void subq(struct Cpu *, uint16_t, uint16_t);
+void mulq(struct Cpu *, uint16_t, uint16_t);
+void divq(struct Cpu *, uint16_t, uint16_t);
+void remq(struct Cpu *, uint16_t, uint16_t);
+void not(struct Cpu *, uint16_t, uint16_t);
+void and(struct Cpu *, uint16_t, uint16_t);
+void or(struct Cpu *, uint16_t, uint16_t);
+void xor(struct Cpu *, uint16_t, uint16_t);
+
+
+
+
+
 
 // IRQ stuff
 typedef struct Node {

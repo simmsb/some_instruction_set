@@ -37,6 +37,20 @@ class ops2(enum.IntEnum):
     fmu = 0x800E
     fdv = 0x800F
     irq = 0x8010
+    addl = 0x8011
+    subl = 0x8012
+    mull = 0x8013
+    divl = 0x8014
+    reml = 0x8015
+    addq = 0x8016
+    subq = 0x8017
+    mulq = 0x8018
+    divq = 0x8019
+    remq = 0x801A
+    not_ = 0x801B
+    and_ = 0x801C
+    or_ = 0x801D
+    xor = 0x801E
 
 
 class Register(enum.IntEnum):
